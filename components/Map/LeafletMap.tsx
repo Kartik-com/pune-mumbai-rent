@@ -455,7 +455,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
 
   // ── Global Handlers for Popup Buttons ──
   useEffect(() => {
-    const w = window as unknown as Record<string, any>;
+    const w = window as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     w.__ratePin__ = (pinId: string) => setRatingModal({ pinId, locality: 0, quality: 0 });
     w.__reportPin__ = async (id: string) => {
       try {
@@ -622,7 +622,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
                 <div key={item.field}>
                   <label className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3 block mb-2">{item.label}</label>
                   <div className="flex gap-2">
-                    {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal!, [item.field]: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${((ratingModal as any)[item.field]) >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
+                    {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal!, [item.field]: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${(ratingModal as any)[item.field] >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
                   </div>
                 </div>
               ))}
