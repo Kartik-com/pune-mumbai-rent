@@ -54,10 +54,9 @@ body {
   font-family: var(--font-outfit), sans-serif;
 }
 
-/* 🌀 Natural Navy Theme (Multiply Blend to preserve water/trees) */
+/* 🌀 Custom Navy Theme (#1A1A2E) with Legible Roads */
 .leaflet-tile-container {
-  mix-blend-mode: multiply;
-  filter: brightness(2.0) contrast(1.1) saturate(1.2) !important;
+  filter: hue-rotate(224deg) brightness(1.4) contrast(1.05) saturate(1.4) !important;
 }
 
 [data-theme='light'] .leaflet-tile-container {
