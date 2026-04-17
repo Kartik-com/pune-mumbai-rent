@@ -140,6 +140,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
   const [stats, setStats] = useState<any>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [ratingModal, setRatingModal] = useState<{ pinId: string; locality: number; quality: number } | null>(null);
+  const [mapStyle, setMapStyle] = useState<'dark' | 'light'>('dark');
   const [mapReady, setMapReady] = useState(false);
 
   // Area stats
@@ -158,6 +159,9 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
 
   // ── IP Hash & Onboarding ──
   useEffect(() => {
+    const savedStyle = localStorage.getItem('map-style') as 'dark' | 'light';
+    if (savedStyle) setMapStyle(savedStyle);
+
     if (!localStorage.getItem('has_seen_onboarding')) {
       setShowOnboarding(true);
     }
@@ -198,7 +202,9 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer(mapStyle === 'dark' 
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 20,
     }).addTo(map);
@@ -261,7 +267,30 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
   // ── Update center on city change ──
   useEffect(() => {
     if (mapRef.current) mapRef.current.setView([centerLat, centerLng], zoom);
-  }, [centerLat, centerLng, zoom]);
+  }, [centerLat, centerLng, zoom, mapStyle]);
+
+  // Secondary effect to swap tiles WITHOUT re-initializing the whole map
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    // Find and remove existing tile layers (except Green/Metro)
+    mapRef.current.eachLayer((layer) => {
+      if (layer instanceof L.TileLayer && layer !== greenLayerRef.current) {
+        mapRef.current!.removeLayer(layer);
+      }
+    });
+
+    const url = mapStyle === 'dark' 
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
+    L.tileLayer(url, {
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 20,
+    }).addTo(mapRef.current);
+
+    localStorage.setItem('map-style', mapStyle);
+  }, [mapStyle]);
 
   // ── Rebuild metro lines on city change ──
   useEffect(() => {
@@ -667,6 +696,8 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
         showMetro={showMetro}
         onToggleGreen={() => setShowGreen(!showGreen)}
         showGreen={showGreen}
+        onToggleStyle={() => setMapStyle(prev => prev === 'dark' ? 'light' : 'dark')}
+        mapStyle={mapStyle}
       />
 
       {/* Sliding panels */}
