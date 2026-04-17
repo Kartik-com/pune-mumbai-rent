@@ -56,7 +56,7 @@ body {
 
 /* 🌀 Custom Navy Theme (#1A1A2E) with Legible Roads */
 .leaflet-tile-container {
-  filter: hue-rotate(224deg) brightness(1.2) contrast(1.1) saturate(1.4) !important;
+  filter: hue-rotate(224deg) brightness(1.4) contrast(1.05) saturate(1.4) !important;
 }
 
 [data-theme='light'] .leaflet-tile-container {
