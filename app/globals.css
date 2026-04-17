@@ -59,12 +59,12 @@ body {
   filter: hue-rotate(224deg) brightness(1.4) contrast(1.05) saturate(1.4) !important;
 }
 
-/* Ensure Satellite and Light tiles are always natural */
-.satellite-tiles, 
-.satellite-tiles .leaflet-tile-container, 
-.satellite-tiles img,
-[data-theme='light'] .leaflet-tile-container {
+/* 🛰️ Pure Satellite Override (Zero Filters) */
+.satellite-tiles img, 
+.satellite-tiles .leaflet-tile-container,
+.leaflet-layer.satellite-tiles {
   filter: none !important;
+  mix-blend-mode: normal !important;
 }
 
 [data-theme='light'] .leaflet-tile-container {
