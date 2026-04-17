@@ -258,9 +258,12 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       });
     });
 
-    // ── Green Cover Layer ──
+    // ── Green Cover Layer (Normal Satellite) ──
     greenLayerRef.current = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      opacity: 0.35, maxZoom: 18, attribution: 'ESRI'
+      opacity: 1, 
+      maxZoom: 18, 
+      attribution: 'ESRI',
+      className: 'satellite-tiles'
     });
 
     mapRef.current = map;

@@ -58,6 +58,9 @@ body {
 .leaflet-tile-container {
   filter: hue-rotate(224deg) brightness(1.4) contrast(1.05) saturate(1.4) !important;
 }
+.satellite-tiles {
+  filter: none !important;
+}
 
 [data-theme='light'] .leaflet-tile-container {
   filter: none !important;
