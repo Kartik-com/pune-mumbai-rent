@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 :root {
+  /* Default / Dark Theme */
   --bg: #0f0f0f;
-  --surface: #181818;
+  --surface: rgba(24, 24, 24, 0.45);
   --surface2: #222222;
   --surface3: #2a2a2a;
   --border: #2e2e2e;
@@ -20,6 +21,24 @@
   --pink: #ff6b9d;
   --yellow: #e8c547;
   --teal: #3ecfc8;
+  --glass-bg: rgba(24, 24, 24, 0.45);
+  --text-on-accent: #0f0f0f;
+}
+
+[data-theme='light'] {
+  --bg: #fdfdfc;
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface2: #ffffff;
+  --surface3: #f1f3f5;
+  --border: rgba(0, 0, 0, 0.08);
+  --border2: rgba(0, 0, 0, 0.12);
+  --text: #1a1a1a;
+  --text2: #5a5855;
+  --text3: #adb5bd;
+  --accent: #e8c547;
+  /* Multi-color accents stay identical but pop more on white */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --text-on-accent: #0f0f0f;
 }
 
 body {
@@ -37,7 +56,7 @@ body {
 
 /* Glassmorphism Classes */
 .glass {
-  background: rgba(24, 24, 24, 0.45);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);

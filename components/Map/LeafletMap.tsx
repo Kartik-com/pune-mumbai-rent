@@ -625,7 +625,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
   // RENDER
   // ══════════════════════════════════════
   return (
-    <div className="relative w-full h-screen bg-bg overflow-hidden">
+    <div className="relative w-full h-screen bg-bg overflow-hidden" data-theme={mapStyle}>
       {/* Map canvas — base layer */}
       <div ref={mapContainerRef} className="absolute inset-0 z-[100]" />
 
@@ -637,7 +637,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
         <button
           onClick={() => setCategoryMode('residential')}
           className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${
-            categoryMode === 'residential' ? 'bg-accent text-bg shadow-md' : 'text-text3 hover:text-text2'
+            categoryMode === 'residential' ? 'bg-accent text-on-accent shadow-md' : 'text-text3 hover:text-text2'
           }`}
         >
           Residential
@@ -645,7 +645,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
         <button
           onClick={() => setCategoryMode('commercial')}
           className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${
-            categoryMode === 'commercial' ? 'bg-purple text-bg shadow-md' : 'text-text3 hover:text-text2'
+            categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'
           }`}
         >
           Commercial

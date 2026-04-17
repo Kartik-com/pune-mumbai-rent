@@ -36,9 +36,9 @@ export default function FilterPanel({
               }
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                 filters.bhk.includes(n)
-                  ? 'bg-accent text-bg border-accent'
+                  ? 'bg-accent text-on-accent border-accent'
                   : 'bg-transparent text-text2 border-border2 hover:text-text1 hover:border-text1'
-              }`}
+              } shadow-sm`}
             >
               {n}{n === 5 ? '+' : ''} BHK
             </button>
@@ -61,9 +61,9 @@ export default function FilterPanel({
               onClick={() => setFilters(f => ({ ...f, furnished: f.furnished === opt.id ? 'both' : opt.id }))}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                 filters.furnished === opt.id
-                  ? 'bg-accent text-bg border-accent'
+                  ? 'bg-accent text-on-accent border-accent'
                   : 'bg-transparent text-text2 border-border2 hover:text-text1 hover:border-text1'
-              }`}
+              } shadow-sm`}
             >
               {opt.label}
             </button>
@@ -85,9 +85,9 @@ export default function FilterPanel({
               onClick={() => setFilters(f => ({ ...f, gated: f.gated === opt.id ? 'both' : opt.id }))}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                 filters.gated === opt.id
-                  ? 'text-bg border-transparent'
+                  ? 'text-white border-transparent'
                   : 'bg-transparent text-text2 border-border2 hover:text-text1 hover:border-text1'
-              }`}
+              } shadow-sm`}
               style={filters.gated === opt.id && opt.color ? { background: opt.color } : filters.gated === opt.id ? { background: 'var(--accent)' } : {}}
             >
               {opt.label}
@@ -119,9 +119,9 @@ export default function FilterPanel({
             onClick={() => setFilters(f => ({ ...f, flatmateWanted: !f.flatmateWanted }))}
             className={`w-full py-2.5 rounded-xl text-xs font-semibold border transition-all ${
               filters.flatmateWanted
-                ? 'bg-teal text-bg border-teal'
+                ? 'bg-teal text-white border-teal'
                 : 'bg-transparent text-text2 border-border2 hover:text-text1 hover:border-text1'
-            }`}
+            } shadow-sm`}
           >
             🤝 Looking for Flatmate
           </button>

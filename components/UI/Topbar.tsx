@@ -43,7 +43,7 @@ export default function Topbar({
           <button 
             onClick={onToggleFilter}
             className={`h-11 px-4 rounded-xl font-syn font-bold text-xs uppercase tracking-wider transition-colors shadow-2xl border ${
-              showFilters ? 'bg-accent text-bg border-accent' : 'glass border-border1 text-text1 hover:text-accent'
+              showFilters ? 'bg-accent text-on-accent border-accent' : 'glass border-border1 text-text1 hover:text-accent'
             }`}
           >
             Filters
