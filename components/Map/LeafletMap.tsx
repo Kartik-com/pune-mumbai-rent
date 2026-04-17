@@ -79,7 +79,7 @@ function createPinIcon(pin: RentPin): L.DivIcon {
   const price = fmtRent(pin.rent).replace('₹', '');
   const typeLabel = isComm ? (pin.sub_type ? pin.sub_type.charAt(0).toUpperCase() : 'C') : `${pin.bhk}BHK`;
   
-  const rating = pin.ratings && pin.ratings.count > 0 ? `<span style="margin-left:4px;color:rgba(255,255,255,0.7);font-size:9px;">★${pin.ratings.avgLocality.toFixed(1)}</span>` : '';
+  const rating = pin.ratings && pin.ratings.count > 0 && pin.ratings.avgLocality !== null ? `<span style="margin-left:4px;color:rgba(255,255,255,0.7);font-size:9px;">★${pin.ratings.avgLocality.toFixed(1)}</span>` : '';
   
   let badge = '';
   if (pin.available) {
@@ -538,6 +538,20 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     setShowPinModal(false); setDraftPinLatLng(null);
   };
 
+  const submitRating = async () => {
+    if (!ratingModal) return;
+    try {
+      await fetch('/api/rate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin_id: ratingModal.pinId, locality: ratingModal.locality, quality: ratingModal.quality }),
+      });
+      showToast('Rating submitted!');
+      fetchPins();
+    } catch { showToast('Rating noted.'); }
+    setRatingModal(null);
+  };
+
   const handleLocate = () => {
     if (!mapRef.current) return;
     if ('geolocation' in navigator) {
@@ -623,7 +637,8 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
                   <label className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3 block mb-2">{item.label}</label>
                   <div className="flex gap-2">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal!, [item.field]: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${(ratingModal as any)[item.field] >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal!, [item.field as 'locality' | 'quality']: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${(ratingModal as any)[item.field] >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
                   </div>
                 </div>
               ))}
