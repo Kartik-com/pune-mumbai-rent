@@ -73,7 +73,7 @@ function fmtRent(r: number) {
 }
 
 // ── Pin Icon (Cyber Price Pill Style) ──
-function createPinIcon(pin: any): L.DivIcon {
+function createPinIcon(pin: RentPin): L.DivIcon {
   const isComm = pin.category === 'commercial';
   const color = isComm ? 'var(--purple)' : (pin.gated ? 'var(--pin-gated)' : 'var(--pin-nogated)');
   const price = fmtRent(pin.rent).replace('₹', '');
@@ -393,7 +393,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     if (!clusterGroupRef.current) return;
     clusterGroupRef.current.clearLayers();
 
-    filteredPins.forEach((pin) => {
+    filteredPins.forEach((pin: RentPin) => {
       const icon = createPinIcon(pin);
       const marker = L.marker([pin.lat, pin.lng], { icon });
 
@@ -618,16 +618,14 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
         <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setRatingModal(null)}>
           <div className="glass rounded-2xl w-full max-w-sm p-6 space-y-5" onClick={e => e.stopPropagation()}>
             <h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Rate listing</h3>
-            <div className="space-y-4">
-              {[ {label:'📍 Locality', field: 'locality'}, {label:'🏗 Built Quality', field: 'quality'} ].map((item:any) => (
+              {[ {label:'📍 Locality', field: 'locality'}, {label:'🏗 Built Quality', field: 'quality'} ].map((item: {label:string, field:string}) => (
                 <div key={item.field}>
                   <label className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3 block mb-2">{item.label}</label>
                   <div className="flex gap-2">
-                    {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal, [item.field]: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${ratingModal[item.field] >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
+                    {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal!, [item.field]: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${((ratingModal as any)[item.field]) >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
                   </div>
                 </div>
               ))}
-            </div>
             <button onClick={submitRating} className="w-full py-3 bg-accent text-bg font-syn font-extrabold uppercase tracking-widest text-sm rounded-xl hover:scale-[1.02] shadow-lg">Submit</button>
           </div>
         </div>
@@ -639,7 +637,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
             <div className="flex justify-between items-center"><h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Area Stats</h3><button onClick={() => { setAreaStats(null); if (areaRectRef.current && mapRef.current) mapRef.current.removeLayer(areaRectRef.current); }} className="text-text3 text-xl">✕</button></div>
             <div className="flex items-end gap-2"><span className="font-syn font-extrabold text-3xl text-text1">{areaStats.total}</span><span className="text-text3 text-xs mb-1 uppercase tracking-wider">pins in area</span></div>
             <div className="space-y-2">
-              {areaStats.byBhk.map((s: any) => (
+              {areaStats.byBhk.map((s: { bhk: number; avg: number; count: number }) => (
                 <div key={s.bhk} className="flex justify-between items-center p-3 rounded-xl bg-surface2 border border-border1">
                   <span className="font-syn text-sm font-bold text-text2 uppercase tracking-tight">{s.bhk} BHK <span className="text-text3 font-normal">({s.count})</span></span>
                   <span className="font-syn text-lg font-extrabold text-accent">{fmtRent(s.avg)}</span>
