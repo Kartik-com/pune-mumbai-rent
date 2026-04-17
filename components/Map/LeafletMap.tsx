@@ -622,6 +622,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
                 <div key={item.field}>
                   <label className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3 block mb-2">{item.label}</label>
                   <div className="flex gap-2">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal!, [item.field]: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${(ratingModal as any)[item.field] >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
                   </div>
                 </div>
