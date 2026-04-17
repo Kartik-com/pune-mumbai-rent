@@ -54,9 +54,10 @@ body {
   font-family: var(--font-outfit), sans-serif;
 }
 
-/* 🌀 Custom Navy Theme (#1A1A2E) - Apply only to dark-theme layers */
+/* 🌀 Modern Natural Navy (Hard-Light blend to preserve water/trees) */
 [data-theme='dark'] .leaflet-layer:not(.satellite-tiles) .leaflet-tile-container {
-  filter: hue-rotate(224deg) brightness(1.4) contrast(1.05) saturate(1.4) !important;
+  mix-blend-mode: hard-light;
+  filter: brightness(1.6) contrast(1.1) saturate(1.2) !important;
 }
 
 /* 🛰️ Pure Satellite Override (Zero Filters) */

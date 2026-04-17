@@ -7,13 +7,15 @@ export default function Topbar({
   onToggleFilter,
   showFilters,
   onSelectLocation,
-  stats
+  stats,
+  children
 }: { 
   city: string;
   onToggleFilter?: () => void;
   showFilters?: boolean;
   onSelectLocation?: (lat: number, lng: number) => void;
   stats?: { total: number; addedThisWeek: number };
+  children?: React.ReactNode;
 }) {
   return (
     <header className="fixed top-5 left-0 right-0 z-[2000] px-5 flex items-start justify-between pointer-events-none">
@@ -66,6 +68,13 @@ export default function Topbar({
               <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse"></span>
               ⚡ {stats.addedThisWeek} New This Week
             </span>
+          </div>
+        )}
+
+        {/* Sub-navigation Children (e.g., Category Toggle) */}
+        {children && (
+          <div className="flex justify-center mt-2 pointer-events-auto">
+            {children}
           </div>
         )}
       </div>
