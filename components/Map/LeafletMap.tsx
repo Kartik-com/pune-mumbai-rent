@@ -208,9 +208,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    L.tileLayer(mapStyle === 'dark' 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 20,
     }).addTo(map);
@@ -283,9 +281,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       }
     });
 
-    const url = mapStyle === 'dark' 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    const url = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
     L.tileLayer(url, {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
@@ -570,7 +566,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       <MapLoader isReady={mapReady} />
 
       {/* Category Toggle */}
-      <div className="absolute top-[115px] left-1/2 -translate-x-1/2 z-[2000] glass px-1.5 py-1.5 rounded-2xl flex gap-1 shadow-2xl pointer-events-auto border border-border1 animate-[popup-enter_0.3s_ease]">
+      <div className="absolute top-[98px] left-1/2 -translate-x-1/2 z-[2000] glass px-1.5 py-1.5 rounded-2xl flex gap-1 shadow-2xl pointer-events-auto border border-border1 animate-[popup-enter_0.3s_ease]">
         <button onClick={() => setCategoryMode('residential')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'residential' ? 'bg-accent text-on-accent shadow-md' : 'text-text3 hover:text-text2'}`}>Residential</button>
         <button onClick={() => setCategoryMode('commercial')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'}`}>Commercial</button>
       </div>
