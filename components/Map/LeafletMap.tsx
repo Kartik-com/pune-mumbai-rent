@@ -570,12 +570,12 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       <MapLoader isReady={mapReady} />
 
       {/* Category Toggle */}
-      <div className="absolute top-[84px] left-1/2 -translate-x-1/2 z-[2000] glass px-1.5 py-1.5 rounded-2xl flex gap-1 shadow-2xl pointer-events-auto border border-border1">
+      <div className="absolute top-[145px] left-1/2 -translate-x-1/2 z-[2000] glass px-1.5 py-1.5 rounded-2xl flex gap-1 shadow-2xl pointer-events-auto border border-border1">
         <button onClick={() => setCategoryMode('residential')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'residential' ? 'bg-accent text-on-accent shadow-md' : 'text-text3 hover:text-text2'}`}>Residential</button>
         <button onClick={() => setCategoryMode('commercial')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'}`}>Commercial</button>
       </div>
 
-      <Topbar city={city} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo([l1, l2], 16)} />
+      <Topbar city={city} stats={stats} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo([l1, l2], 16)} />
 
       {/* Filter Sidebar */}
       <div className={`fixed top-[84px] left-4 bottom-10 w-[260px] z-[1500] glass rounded-2xl overflow-y-auto transition-transform duration-300 ${showFilterSidebar ? 'translate-x-0' : '-translate-x-[300px]'}`}>
@@ -590,7 +590,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
         <div className="flex flex-col items-center gap-4">
           <div className="glass px-4 py-2 rounded-xl pointer-events-auto shadow-2xl flex items-center gap-3 border border-border1 animate-[fade-in_0.5s_ease]">
              <span className="w-2 h-2 rounded-full bg-green animate-pulse shadow-[0_0_8px_rgba(62,200,122,0.6)]" />
-             <span className="font-syn font-bold text-[11px] text-text1 whitespace-nowrap tracking-widest uppercase">{filteredPins.length} LIVE RENTS</span>
+             <span className="font-syn font-bold text-[11px] text-text1 whitespace-nowrap tracking-widest uppercase">{filteredPins.length.toLocaleString()} LIVE RENTS</span>
              <div className="w-[1px] h-3 bg-border2" />
              <button onClick={() => setShowLocationSearch(true)} className="text-accent hover:text-white transition-colors font-syn font-extrabold text-[11px] uppercase tracking-tighter">Pin Your Rent 📍</button>
           </div>

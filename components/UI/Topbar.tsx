@@ -6,12 +6,14 @@ export default function Topbar({
   city, 
   onToggleFilter,
   showFilters,
-  onSelectLocation
+  onSelectLocation,
+  stats
 }: { 
   city: string;
   onToggleFilter?: () => void;
   showFilters?: boolean;
   onSelectLocation?: (lat: number, lng: number) => void;
+  stats?: { total: number; addedThisWeek: number };
 }) {
   return (
     <header className="fixed top-5 left-0 right-0 z-[2000] px-5 flex items-start justify-between pointer-events-none">
@@ -53,17 +55,19 @@ export default function Topbar({
         </div>
         
         {/* Live Status Bar */}
-        <div className="flex items-center gap-3 px-3 py-1 bg-surface1/20 rounded-full border border-border1/30 animate-[fade-in_0.5s_ease]">
-          <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-syn font-bold text-text3">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-            📍 3,142 Pins
-          </span>
-          <div className="w-[1px] h-3 bg-border2 opacity-30"></div>
-          <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-syn font-bold text-text3">
-            <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse"></span>
-            ⚡ 14 Live Stats
-          </span>
-        </div>
+        {stats && (
+          <div className="flex items-center gap-3 px-3 py-1 bg-surface1/20 rounded-full border border-border1/30 animate-[fade-in_0.5s_ease]">
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-syn font-bold text-text3">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+              📍 {stats.total.toLocaleString()} Pins
+            </span>
+            <div className="w-[1px] h-3 bg-border2 opacity-30"></div>
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-syn font-bold text-text3">
+              <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse"></span>
+              ⚡ {stats.addedThisWeek} New This Week
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Right: City nav */}
