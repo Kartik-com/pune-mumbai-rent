@@ -54,12 +54,16 @@ body {
   font-family: var(--font-outfit), sans-serif;
 }
 
-/* 🌀 Custom Navy Theme (#1A1A2E) with Legible Roads */
-.leaflet-tile-container {
+/* 🌀 Custom Navy Theme (#1A1A2E) - Apply only to dark-theme layers */
+[data-theme='dark'] .leaflet-layer:not(.satellite-tiles) .leaflet-tile-container {
   filter: hue-rotate(224deg) brightness(1.4) contrast(1.05) saturate(1.4) !important;
 }
-/* Ensure Satellite tiles are never filtered */
-.satellite-tiles, .satellite-tiles .leaflet-tile-container, .satellite-tiles img {
+
+/* Ensure Satellite and Light tiles are always natural */
+.satellite-tiles, 
+.satellite-tiles .leaflet-tile-container, 
+.satellite-tiles img,
+[data-theme='light'] .leaflet-tile-container {
   filter: none !important;
 }
 
