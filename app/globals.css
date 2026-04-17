@@ -50,13 +50,13 @@ body {
 
 /* Base resets for Leaflet to fit dark theme */
 .leaflet-container {
-  background: var(--bg) !important;
+  background: #1A1A2E !important;
   font-family: var(--font-outfit), sans-serif;
 }
 
-/* 🌀 High-Legibility Slate-Blue Map Filter (Inverted Voyager) */
+/* 🌀 Custom Navy Theme (#1A1A2E) with Legible Roads */
 .leaflet-tile-container {
-  filter: invert(100%) hue-rotate(170deg) brightness(1.2) contrast(0.9) saturate(1.2) !important;
+  filter: hue-rotate(224deg) brightness(1.2) contrast(1.1) saturate(1.4) !important;
 }
 
 [data-theme='light'] .leaflet-tile-container {

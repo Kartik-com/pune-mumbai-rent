@@ -55,7 +55,7 @@ export default function Topbar({
         </div>
         
         {/* Live Status Bar */}
-        {stats && (
+        {stats && stats.total > 0 && (
           <div className="flex items-center gap-3 px-3 py-1 bg-surface1/20 rounded-full border border-border1/30 animate-[fade-in_0.5s_ease]">
             <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-syn font-bold text-text3">
               <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
