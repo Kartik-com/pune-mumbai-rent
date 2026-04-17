@@ -70,7 +70,7 @@ export async function POST(
       rent: pin.rent,
       revealsRemaining: 5 - (count || 0) - 1
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

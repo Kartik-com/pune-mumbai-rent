@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchLocation } from '../../lib/nominatim';
 
+interface LocationResult {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+}
+
 export default function TopbarSearch({
   city,
   onSelectLocation,
@@ -9,7 +16,7 @@ export default function TopbarSearch({
   onSelectLocation: (lat: number, lng: number) => void;
 }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<LocationResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -34,8 +41,8 @@ export default function TopbarSearch({
       setLoading(true);
       try {
         const res = await searchLocation(query, city);
-        setResults(res);
-      } catch (err) {
+        setResults(res as LocationResult[]);
+      } catch {
         // ignore
       }
       setLoading(false);

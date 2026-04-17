@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { searchLocation } from '../../lib/nominatim';
 
+interface LocationResult {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+}
+
 export default function LocationSearchModal({
   onClose,
   onSelect,
@@ -11,7 +18,7 @@ export default function LocationSearchModal({
   city: string;
 }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<LocationResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,8 +34,8 @@ export default function LocationSearchModal({
       setError(null);
       try {
         const res = await searchLocation(query, city);
-        setResults(res);
-      } catch (err) {
+        setResults(res as LocationResult[]);
+      } catch {
         setError('Failed to search location.');
       }
       setLoading(false);
