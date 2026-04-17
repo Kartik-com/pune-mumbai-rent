@@ -66,46 +66,52 @@ interface LeafletMapProps {
   zoom: number;
 }
 
-// ── Pin Icon ──
-function createPinIcon(gated: boolean | null, available: boolean = false, flatmateWanted: boolean = false, category: string = 'residential'): L.DivIcon {
-  const isComm = category === 'commercial';
-  const color = isComm ? 'var(--purple)' : (gated ? 'var(--pin-gated)' : 'var(--pin-nogated)');
-  const innerHtml = isComm ? `<span style="position:absolute;z-index:3;font-size:12px;transform:translateY(-1px);">💼</span>` : `<div style="position:absolute;width:8px;height:8px;background:#0f0f0f;border-radius:50%;z-index:2;"></div>`;
-
-  let badge = '';
-  if (available) {
-    badge = `<div style="position:absolute;top:-8px;right:-4px;background:var(--green);color:#0f0f0f;font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:0.5px;box-shadow:0 1px 4px rgba(0,0,0,0.4);">AVAIL</div>`;
-  } else if (flatmateWanted) {
-    badge = `<div style="position:absolute;top:-8px;right:-4px;background:var(--teal);color:#0f0f0f;font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:0.5px;box-shadow:0 1px 4px rgba(0,0,0,0.4);">ROOM</div>`;
-  }
-  return L.divIcon({
-    className: 'custom-pin-marker',
-    html: `<div style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
-      <div style="position:absolute;width:26px;height:26px;background:${color};border-radius:10px 10px 10px 2px;transform:rotate(-45deg);box-shadow:0 3px 8px rgba(0,0,0,0.35);border:1.5px solid rgba(255,255,255,0.15);"></div>
-      ${innerHtml}
-      ${badge}
-    </div>`,
-    iconSize: [44, 44],
-    iconAnchor: [22, 40],
-    popupAnchor: [0, -36],
-  });
-}
-
-// ── Cluster Icon ──
-const createClusterIcon = (cluster: L.MarkerCluster) => {
-  const count = cluster.getChildCount();
-  return L.divIcon({
-    html: `<div>${count}</div>`,
-    className: 'marker-cluster marker-cluster-glass',
-    iconSize: L.point(44, 44),
-  });
-};
-
 // ── Format helpers ──
 function fmtRent(r: number) {
   if (r >= 100000) return `₹${(r / 100000).toFixed(1)}L`;
   return `₹${(r / 1000).toFixed(1)}k`;
 }
+
+// ── Pin Icon (Cyber Price Pill Style) ──
+function createPinIcon(pin: any): L.DivIcon {
+  const isComm = pin.category === 'commercial';
+  const color = isComm ? 'var(--purple)' : (pin.gated ? 'var(--pin-gated)' : 'var(--pin-nogated)');
+  const price = fmtRent(pin.rent).replace('₹', '');
+  const typeLabel = isComm ? (pin.sub_type ? pin.sub_type.charAt(0).toUpperCase() : 'C') : `${pin.bhk}BHK`;
+  
+  const rating = pin.ratings && pin.ratings.count > 0 ? `<span style="margin-left:4px;color:rgba(255,255,255,0.7);font-size:9px;">★${pin.ratings.avgLocality.toFixed(1)}</span>` : '';
+  
+  let badge = '';
+  if (pin.available) {
+    badge = `<div style="position:absolute;top:-6px;right:-4px;background:var(--green);color:#0f0f0f;font-size:6px;font-weight:900;padding:1px 3px;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.3);z-index:10;">AVLB</div>`;
+  } else if (pin.flatmate_wanted) {
+    badge = `<div style="position:absolute;top:-6px;right:-4px;background:var(--teal);color:#0f0f0f;font-size:6px;font-weight:900;padding:1px 3px;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.3);z-index:10;">ROOM</div>`;
+  }
+
+  return L.divIcon({
+    className: 'custom-pill-marker',
+    html: `<div style="position:relative;display:flex;align-items:center;background:${color};color:#fff;padding:4px 10px;border-radius:8px;font-family:var(--font-outfit),sans-serif;font-weight:800;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,0.45);border:1.5px solid rgba(255,255,255,0.15);white-space:nowrap;transition:all 0.2s ease;">
+      <span style="opacity:0.85;margin-right:5px;font-size:10px;">${typeLabel}</span>
+      <span>${price}</span>
+      ${rating}
+      ${badge}
+      <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid ${color};"></div>
+    </div>`,
+    iconSize: [60, 26],
+    iconAnchor: [30, 26],
+    popupAnchor: [0, -28],
+  });
+}
+
+// ── Cluster Icon (High Contrast Dark) ──
+const createClusterIcon = (cluster: L.MarkerCluster) => {
+  const count = cluster.getChildCount();
+  return L.divIcon({
+    html: `<div>${count}</div>`,
+    className: 'marker-cluster marker-cluster-glass',
+    iconSize: L.point(34, 34),
+  });
+};
 
 // ══════════════════════════════════════════
 // MAIN COMPONENT
@@ -157,7 +163,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     setTimeout(() => setToastMessage(null), 3000);
   }, []);
 
-  // ── IP Hash & Onboarding ──
+  // ── IP Hash & Load Style ──
   useEffect(() => {
     const savedStyle = localStorage.getItem('map-style') as 'dark' | 'light';
     if (savedStyle) setMapStyle(savedStyle);
@@ -209,9 +215,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       maxZoom: 20,
     }).addTo(map);
 
-    // Fade out loader when tiles start loading or map is ready
     map.whenReady(() => {
-      // Very small delay to ensure first tiles have a frame to render
       setTimeout(() => setMapReady(true), 150);
     });
 
@@ -231,7 +235,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       setShowPinModal(false);
     });
 
-    // ── Metro Lines (coordinate-based Leaflet primitives, per city) ──
+    // ── Metro Lines ──
     metroLayerRef.current = L.layerGroup().addTo(map);
     const metroLines = getMetroLines(city);
     metroLines.forEach((line) => {
@@ -254,7 +258,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       });
     });
 
-    // ── Green Cover Layer (Simulated via ESRI imagery) ──
+    // ── Green Cover Layer ──
     greenLayerRef.current = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       opacity: 0.35, maxZoom: 18, attribution: 'ESRI'
     });
@@ -264,16 +268,15 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Update center on city change ──
+  // ── Fly to City ──
   useEffect(() => {
     if (mapRef.current) mapRef.current.setView([centerLat, centerLng], zoom);
-  }, [centerLat, centerLng, zoom, mapStyle]);
+  }, [centerLat, centerLng, zoom]);
 
-  // Secondary effect to swap tiles WITHOUT re-initializing the whole map
+  // ── Swap Tiles ──
   useEffect(() => {
     if (!mapRef.current) return;
     
-    // Find and remove existing tile layers (except Green/Metro)
     mapRef.current.eachLayer((layer) => {
       if (layer instanceof L.TileLayer && layer !== greenLayerRef.current) {
         mapRef.current!.removeLayer(layer);
@@ -292,13 +295,11 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     localStorage.setItem('map-style', mapStyle);
   }, [mapStyle]);
 
-  // ── Rebuild metro lines on city change ──
+  // ── Refresh Metro on City Change ──
   useEffect(() => {
     if (!mapRef.current || !metroLayerRef.current) return;
-    // Clear existing metro layers
     metroLayerRef.current.clearLayers();
 
-    // Redraw metro lines for the current city
     const metroLines = getMetroLines(city);
     metroLines.forEach((line) => {
       const coords = line.stations.map(s => s.coords);
@@ -321,7 +322,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     });
   }, [city]);
 
-  // ── Draft Pin Draggable Marker ──
+  // ── Draft Pin Draggable ──
   useEffect(() => {
     if (!mapRef.current) return;
     if (draftPinLatLng && !showPinModal) {
@@ -353,7 +354,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     }
   }, [draftPinLatLng, showPinModal]);
 
-  // ── Toggle layers ──
+  // ── Toggle Extra Layers ──
   useEffect(() => {
     if (!mapRef.current) return;
     if (metroLayerRef.current) {
@@ -366,7 +367,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     }
   }, [showMetro, showGreen]);
 
-  // ── Filter pins ──
+  // ── Filter logic ──
   const filteredPins = pins.filter((p) => {
     const pinCat = p.category || 'residential';
     if (categoryMode !== pinCat) return false;
@@ -387,15 +388,13 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     return true;
   });
 
-  // ══════════════════════════════════════
-  // RENDER MARKERS
-  // ══════════════════════════════════════
+  // ── Render Markers Effect ──
   useEffect(() => {
     if (!clusterGroupRef.current) return;
     clusterGroupRef.current.clearLayers();
 
     filteredPins.forEach((pin) => {
-      const icon = createPinIcon(pin.gated, pin.available, pin.flatmate_wanted, pin.category);
+      const icon = createPinIcon(pin);
       const marker = L.marker([pin.lat, pin.lng], { icon });
 
       const isOwner = pin.ip_hash === userIpHash;
@@ -411,7 +410,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
         <div style="padding:12px 14px;min-width:260px;font-family:var(--font-outfit),sans-serif;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
             <div>
-              <div style="font-family:var(--font-outfit),sans-serif;font-weight:800;font-size:28px;color:var(--text);line-height:1;">${fmtRent(pin.rent)}</div>
+              <div style="font-family:var(--font-outfit),sans-serif;font-weight:800;font-size:28px;color:var(--text);line-height:1;">${pin.rent.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}</div>
               <div style="font-size:12px;color:var(--text3);margin-top:4px;">
                 ${pin.category === 'commercial' ? `<span style="text-transform:capitalize;color:var(--purple);font-weight:bold;">${pin.sub_type || 'Commercial'}</span> · ` : ''}
                 ${pin.category === 'commercial' ? (pin.sqft ? `${pin.sqft} sqft` : '') : `${pin.bhk} BHK`}
@@ -450,24 +449,14 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       `;
 
       marker.bindPopup(popupHtml, { minWidth: 280, maxWidth: 320, className: 'dark-popup' });
-      marker.bindTooltip(
-        `<div style="font-family:var(--font-outfit),sans-serif;font-weight:800;font-size:12px;color:#0f0f0f;">${pin.bhk}BHK - ${fmtRent(pin.rent)}</div>`, 
-        { direction: 'top', offset: [0, -36], className: 'bg-white rounded-md px-2 py-1 shadow-xl border-0', opacity: 0.95 }
-      );
       clusterGroupRef.current!.addLayer(marker);
     });
   }, [filteredPins, userIpHash]);
 
-  // ══════════════════════════════════════
-  // GLOBAL WINDOW HANDLERS (popup buttons)
-  // ══════════════════════════════════════
+  // ── Global Handlers for Popup Buttons ──
   useEffect(() => {
-    const w = window as unknown as Record<string, unknown>;
-
-    w.__ratePin__ = (pinId: string) => {
-      setRatingModal({ pinId, locality: 0, quality: 0 });
-    };
-
+    const w = window as unknown as Record<string, any>;
+    w.__ratePin__ = (pinId: string) => setRatingModal({ pinId, locality: 0, quality: 0 });
     w.__reportPin__ = async (id: string) => {
       try {
         await fetch('/api/pins/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'report' }) });
@@ -475,60 +464,37 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
         fetchPins();
       } catch { showToast('Failed to report.'); }
     };
-
     w.__interestPin__ = async (id: string) => {
       if (!confirm('Instantly connect with the owner on WhatsApp? (Secure reveal: max 5 per day)')) return;
-      
       try {
         const res = await fetch(`/api/pins/${id}/reveal`, { method: 'POST' });
         const data = await res.json();
-        
-        if (res.status === 429) {
-          showToast(data.error || 'Rate limit reached.');
-          return;
-        }
-        
-        if (!res.ok) {
-          showToast(data.error || 'Could not find contact.');
-          return;
-        }
-        
-        // Open WhatsApp with pre-filled message
+        if (res.status === 429) { showToast(data.error || 'Rate limit reached.'); return; }
+        if (!res.ok) { showToast(data.error || 'No contact found.'); return; }
         const bhkStr = data.category === 'commercial' ? data.sub_type : `${data.bhk}BHK`;
         const text = `Hi! I saw your ${bhkStr} at ${data.society} for ₹${data.rent.toLocaleString('en-IN')}/mo on the map. Is it still available?`;
         window.open(`https://wa.me/91${data.phone}?text=${encodeURIComponent(text)}`, '_blank');
-        
         showToast(`Success! ${data.revealsRemaining} reveals left today.`);
-      } catch {
-        showToast('Error connecting to WhatsApp.');
-      }
+      } catch { showToast('Error connecting to WhatsApp.'); }
     };
-
     w.__sharePin__ = (_id: string, bhk: string, rent: string, society: string) => {
       const text = `Check this ${bhk}BHK at ${decodeURIComponent(society)} for ₹${parseInt(rent).toLocaleString('en-IN')}/mo on ${city}.rent`;
-      if (navigator.share) {
-        navigator.share({ title: `${city}.rent`, text, url: window.location.href });
-      } else {
-        navigator.clipboard.writeText(text + ' — ' + window.location.href);
-        showToast('Link copied to clipboard!');
-      }
+      if (navigator.share) navigator.share({ title: `${city}.rent`, text, url: window.location.href });
+      else { navigator.clipboard.writeText(text + ' — ' + window.location.href); showToast('Link copied!'); }
     };
-
     w.__deletePin__ = async (id: string) => {
-      if (!confirm('Delete this pin? This cannot be undone.')) return;
+      if (!confirm('Delete this pin?')) return;
       try {
         await fetch('/api/pins/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip_hash: userIpHash }) });
-        showToast('Pin deleted.');
-        fetchPins();
-      } catch { showToast('Failed to delete.'); }
+        showToast('Pin deleted.'); fetchPins();
+      } catch { showToast('Delete failed.'); }
     };
   }, [fetchPins, showToast, city, userIpHash]);
 
-  // ── Area Stats ──
+  // ── Area Stats Logic ──
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
-
     if (areaSelectMode) {
       map.getContainer().style.cursor = 'crosshair';
       const handler = (e: L.LeafletMouseEvent) => {
@@ -538,8 +504,6 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
             const bounds = L.latLngBounds(next[0], next[1]);
             if (areaRectRef.current) map.removeLayer(areaRectRef.current);
             areaRectRef.current = L.rectangle(bounds, { color: 'var(--accent)', weight: 2, fillOpacity: 0.1 }).addTo(map);
-
-            // Compute area stats
             const inArea = pins.filter(p => bounds.contains(L.latLng(p.lat, p.lng)));
             const byBhk: Record<number, number[]> = {};
             let gatedCount = 0;
@@ -553,14 +517,8 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
               avg: Math.round(rents.reduce((a, b) => a + b, 0) / rents.length),
               count: rents.length,
             })).sort((a, b) => a.bhk - b.bhk);
-
-            setAreaStats({
-              total: inArea.length,
-              byBhk: bhkStats,
-              gatedPercent: inArea.length > 0 ? Math.round((gatedCount / inArea.length) * 100) : 0,
-            });
-            setAreaSelectMode(false);
-            map.getContainer().style.cursor = '';
+            setAreaStats({ total: inArea.length, byBhk: bhkStats, gatedPercent: inArea.length > 0 ? Math.round((gatedCount / inArea.length) * 100) : 0 });
+            setAreaSelectMode(false); map.getContainer().style.cursor = '';
             return [];
           }
           return next;
@@ -568,305 +526,131 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       };
       map.on('click', handler);
       return () => { map.off('click', handler); };
-    } else {
-      map.getContainer().style.cursor = '';
     }
   }, [areaSelectMode, pins]);
 
-  // ── Submit rating ──
-  const submitRating = async () => {
-    if (!ratingModal) return;
-    try {
-      await fetch('/api/rate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin_id: ratingModal.pinId, locality: ratingModal.locality, quality: ratingModal.quality }),
-      });
-      showToast('Rating submitted!');
-      fetchPins();
-    } catch { showToast('Rating noted.'); }
-    setRatingModal(null);
-  };
-
-  // ── Pin submit ──
   const handlePinSubmit = async (data: Record<string, unknown>) => {
     if (!draftPinLatLng) return;
-    const body = { city, lat: draftPinLatLng.lat, lng: draftPinLatLng.lng, ip_hash: userIpHash, ...data };
     try {
-      await fetch('/api/pins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      showToast('Pin dropped! 📍');
-      fetchPins();
-    } catch { showToast('Failed to add pin.'); }
-    setShowPinModal(false);
-    setDraftPinLatLng(null);
+      await fetch('/api/pins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ city, lat: draftPinLatLng.lat, lng: draftPinLatLng.lng, ip_hash: userIpHash, ...data }) });
+      showToast('Pin dropped! 📍'); fetchPins();
+    } catch { showToast('Add failed.'); }
+    setShowPinModal(false); setDraftPinLatLng(null);
   };
 
   const handleLocate = () => {
     if (!mapRef.current) return;
     if ('geolocation' in navigator) {
-      showToast('Locating you...');
+      showToast('Locating...');
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          mapRef.current!.flyTo([pos.coords.latitude, pos.coords.longitude], 15);
-          showToast('Found you!');
-        },
-        () => {
-          mapRef.current!.flyTo([centerLat, centerLng], zoom);
-          showToast("Couldn't grab location, moving to center.");
-        },
+        (pos) => { mapRef.current!.flyTo([pos.coords.latitude, pos.coords.longitude], 15); showToast('Found you!'); },
+        () => { mapRef.current!.flyTo([centerLat, centerLng], zoom); showToast("GPS missed, moving to center."); },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
-    } else {
-      mapRef.current.flyTo([centerLat, centerLng], zoom);
-    }
+    } else mapRef.current.flyTo([centerLat, centerLng], zoom);
   };
 
-  // ══════════════════════════════════════
-  // RENDER
-  // ══════════════════════════════════════
   return (
     <div className="relative w-full h-screen bg-bg overflow-hidden" data-theme={mapStyle}>
-      {/* Map canvas — base layer */}
       <div ref={mapContainerRef} className="absolute inset-0 z-[100]" />
-
-      {/* City Builds Itself Loader */}
       <MapLoader isReady={mapReady} />
 
-      {/* Top Center UI Toggle for Category Mode */}
+      {/* Category Toggle */}
       <div className="absolute top-[84px] left-1/2 -translate-x-1/2 z-[2000] glass px-1.5 py-1.5 rounded-2xl flex gap-1 shadow-2xl pointer-events-auto border border-border1">
-        <button
-          onClick={() => setCategoryMode('residential')}
-          className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${
-            categoryMode === 'residential' ? 'bg-accent text-on-accent shadow-md' : 'text-text3 hover:text-text2'
-          }`}
-        >
-          Residential
-        </button>
-        <button
-          onClick={() => setCategoryMode('commercial')}
-          className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${
-            categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'
-          }`}
-        >
-          Commercial
-        </button>
+        <button onClick={() => setCategoryMode('residential')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'residential' ? 'bg-accent text-on-accent shadow-md' : 'text-text3 hover:text-text2'}`}>Residential</button>
+        <button onClick={() => setCategoryMode('commercial')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'}`}>Commercial</button>
       </div>
 
-      {/* Topbar overlay */}
-      <Topbar 
-        city={city} 
-        onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} 
-        showFilters={showFilterSidebar} 
-        onSelectLocation={(lat, lng) => {
-          if (mapRef.current) {
-            mapRef.current.flyTo([lat, lng], 16);
-          }
-        }}
-      />
+      <Topbar city={city} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo([l1, l2], 16)} />
 
-      {/* Left Filter Panel */}
-      <div
-        className={`fixed top-[84px] left-4 bottom-24 lg:bottom-4 w-[260px] z-[1500] glass rounded-2xl overflow-y-auto transition-transform duration-300 ${
-          showFilterSidebar ? 'translate-x-0' : '-translate-x-[300px]'
-        }`}
-      >
-        <FilterPanel
-          filters={filters}
-          setFilters={setFilters}
-          city={city}
-          categoryMode={categoryMode}
-        />
+      {/* Filter Sidebar */}
+      <div className={`fixed top-[84px] left-4 bottom-10 w-[260px] z-[1500] glass rounded-2xl overflow-y-auto transition-transform duration-300 ${showFilterSidebar ? 'translate-x-0' : '-translate-x-[300px]'}`}>
+        <FilterPanel filters={filters} setFilters={setFilters} city={city} categoryMode={categoryMode} />
       </div>
 
-      {/* Mobile filter toggle */}
-      <button
-        onClick={() => setShowFilterSidebar(!showFilterSidebar)}
-        className="fixed bottom-28 left-4 lg:hidden z-[1500] glass glass-hover px-4 py-2.5 rounded-xl text-text2 font-syn font-bold text-xs shadow-xl"
-      >
-        {showFilterSidebar ? '✕ Hide' : '☰ Filters'}
-      </button>
+      {/* Controls */}
+      <RightControls onLocate={handleLocate} onHunt={() => setShowFlatHunt(true)} onStats={() => setShowStatsPanel(!showStatsPanel)} onAreaStats={() => { setAreaSelectMode(true); setAreaCorners([]); setAreaStats(null); showToast('Click 2 corners on map.'); }} onToggleMetro={() => setShowMetro(!showMetro)} showMetro={showMetro} onToggleGreen={() => setShowGreen(!showGreen)} showGreen={showGreen} onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} mapStyle={mapStyle} />
 
-      {/* Right Controls */}
-      <RightControls
-        onLocate={handleLocate}
-        onHunt={() => setShowFlatHunt(true)}
-        onStats={() => setShowStatsPanel(!showStatsPanel)}
-        onAreaStats={() => { setAreaSelectMode(true); setAreaCorners([]); setAreaStats(null); showToast('Click 2 corners on the map to draw an area.'); }}
-        onToggleMetro={() => setShowMetro(!showMetro)}
-        showMetro={showMetro}
-        onToggleGreen={() => setShowGreen(!showGreen)}
-        showGreen={showGreen}
-        onToggleStyle={() => setMapStyle(prev => prev === 'dark' ? 'light' : 'dark')}
-        mapStyle={mapStyle}
-      />
+      {/* Floating Bottom CTA */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000] pointer-events-none w-full flex justify-center px-4">
+        <div className="flex flex-col items-center gap-4">
+          <div className="glass px-4 py-2 rounded-xl pointer-events-auto shadow-2xl flex items-center gap-3 border border-border1 animate-[fade-in_0.5s_ease]">
+             <span className="w-2 h-2 rounded-full bg-green animate-pulse shadow-[0_0_8px_rgba(62,200,122,0.6)]" />
+             <span className="font-syn font-bold text-[11px] text-text1 whitespace-nowrap tracking-widest uppercase">{filteredPins.length} LIVE RENTS</span>
+             <div className="w-[1px] h-3 bg-border2" />
+             <button onClick={() => setShowLocationSearch(true)} className="text-accent hover:text-white transition-colors font-syn font-extrabold text-[11px] uppercase tracking-tighter">Pin Your Rent 📍</button>
+          </div>
 
-      {/* Sliding panels */}
+          <button onClick={() => setShowFlatHunt(true)} className="glass px-6 py-4 rounded-2xl flex items-center gap-4 group pointer-events-auto shadow-[0_20px_50px_rgba(0,0,0,0.6)] animate-[popup-enter_0.4s_ease] border border-border2 hover:border-accent transition-all active:scale-95 bg-bg/40">
+            <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-on-accent text-xl shadow-lg">🏠</div>
+            <div className="flex flex-col items-start min-w-[180px]">
+              <span className="text-text1 font-syn font-extrabold text-xs uppercase tracking-widest">Find Flat or Tenants</span>
+              <span className="text-text3 font-dm text-[11px]">Click to drop a seeker pin or match</span>
+            </div>
+            <div className="ml-2 w-8 h-8 rounded-full flex items-center justify-center text-text2 group-hover:text-accent transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </div>
+          </button>
+        </div>
+      </div>
+
       {showStatsPanel && <StatsPanel stats={stats} city={city} onClose={() => setShowStatsPanel(false)} />}
       
-      {/* Draft Pin UI Overlay */}
       {draftPinLatLng && !showPinModal && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] glass px-4 py-4 rounded-2xl flex flex-col items-center gap-3 w-max max-w-[90vw] shadow-[0_15px_40px_rgba(0,0,0,0.8)] animate-[popup-enter_0.2s_ease]">
-          <div className="text-text1 font-syn font-bold text-xs tracking-widest uppercase flex items-center gap-2">
+        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[2000] glass px-4 py-4 rounded-2xl flex flex-col items-center gap-3 w-max shadow-[0_15px_40px_rgba(0,0,0,0.8)] animate-[popup-enter_0.2s_ease]">
+          <div className="text-text1 font-syn font-bold text-[10px] tracking-widest uppercase flex items-center gap-2">
              <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
              Drag pin to adjust location
           </div>
-          <div className="flex gap-2 w-full">
-            <button
-              onClick={() => {
-                if ('geolocation' in navigator) {
-                  showToast('Getting precise location...');
-                  navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                      setDraftPinLatLng({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                      mapRef.current?.flyTo([pos.coords.latitude, pos.coords.longitude], 18);
-                      showToast('Pin moved to your location!');
-                    },
-                    () => showToast("Couldn't grab location. Allow GPS access."),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                  );
-                } else {
-                  showToast("Geolocation not supported.");
-                }
-              }}
-              className="flex-[1.5] py-2 px-3 bg-surface2 text-text1 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-surface3 transition-colors flex items-center justify-center gap-1.5 border border-border1"
-            >
-              📍 My Location
-            </button>
-            <button
-              onClick={() => setDraftPinLatLng(null)}
-              className="px-4 py-2 bg-surface2 text-text3 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:text-text1 transition-colors border border-border1"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => setShowPinModal(true)}
-              className="flex-[1.5] py-2 px-3 bg-accent text-bg rounded-xl text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform"
-            >
-              Confirm ➔
-            </button>
+          <div className="flex gap-2">
+            <button onClick={() => setDraftPinLatLng(null)} className="px-4 py-2 bg-surface2 text-text3 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-border1">Cancel</button>
+            <button onClick={() => setShowPinModal(true)} className="px-6 py-2 bg-accent text-bg rounded-xl text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform">Confirm ➔</button>
           </div>
         </div>
       )}
 
       {showPinModal && draftPinLatLng && <PinModal lat={draftPinLatLng.lat} lng={draftPinLatLng.lng} onClose={() => setShowPinModal(false)} onSubmit={handlePinSubmit} />}
-      {showFlatHunt && <FlatHuntContent city={city} onClose={() => setShowFlatHunt(false)} onSubmitSeeker={() => { setShowFlatHunt(false); showToast('Seeker profile saved! We\'ll match you.'); }} />}
+      {showFlatHunt && <FlatHuntContent city={city} onClose={() => setShowFlatHunt(false)} onSubmitSeeker={() => { setShowFlatHunt(false); showToast('Match profile saved!'); fetchPins(); }} />}
 
-      {/* ── Bottom Bar ── */}
-      <div className="absolute bottom-5 inset-x-5 z-[1000] pointer-events-none flex items-end justify-between gap-4">
-        {/* Left pill: live count */}
-        <div className="glass rounded-xl px-4 py-3 pointer-events-auto shadow-2xl flex items-center gap-3 shrink-0">
-          <span className="w-2.5 h-2.5 rounded-full bg-green animate-pulse shadow-[0_0_8px_rgba(62,200,122,0.6)]" />
-          <span className="font-syn font-bold text-xs text-text1">{filteredPins.length} LIVE PINS</span>
-        </div>
+      {toastMessage && <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] glass rounded-xl px-6 py-3 text-text1 font-syn font-bold text-sm shadow-2xl animate-[popup-enter_0.2s_ease]">{toastMessage}</div>}
 
-        {/* Center hint */}
-        <div className="text-text3 font-syn font-bold uppercase tracking-widest text-[10px] hidden md:block opacity-70 text-center flex-1">
-          Tap map to drop a pin · Anonymous · No login needed
-        </div>
-
-        {/* Right CTA */}
-        <button
-          className="bg-accent text-bg px-5 py-3 rounded-xl pointer-events-auto font-syn font-extrabold uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(232,197,71,0.25)] hover:scale-105 active:scale-95 transition-transform shrink-0"
-          onClick={() => setShowLocationSearch(true)}
-        >
-          📍 Pin Rent Here
-        </button>
-      </div>
-
-      {/* ── Toast ── */}
-      {toastMessage && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] glass rounded-xl px-6 py-3 text-text1 font-syn font-bold text-sm shadow-2xl animate-[popup-enter_0.2s_ease]">
-          {toastMessage}
-        </div>
-      )}
-
-      {/* ── Rating Modal ── */}
       {ratingModal && (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setRatingModal(null)}>
           <div className="glass rounded-2xl w-full max-w-sm p-6 space-y-5" onClick={e => e.stopPropagation()}>
-            <h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Rate this listing</h3>
-
+            <h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Rate listing</h3>
             <div className="space-y-4">
-              <div>
-                <label className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3 block mb-2">📍 Locality</label>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map(n => (
-                    <button key={n} onClick={() => setRatingModal({ ...ratingModal, locality: n })}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold border ${ratingModal.locality >= n ? 'bg-accent text-bg border-accent' : 'border-border2 text-text3'}`}
-                    >{n}</button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3 block mb-2">🏗 Built Quality</label>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map(n => (
-                    <button key={n} onClick={() => setRatingModal({ ...ratingModal, quality: n })}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold border ${ratingModal.quality >= n ? 'bg-accent text-bg border-accent' : 'border-border2 text-text3'}`}
-                    >{n}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <button onClick={submitRating} className="w-full py-3 bg-accent text-bg font-syn font-extrabold uppercase tracking-widest text-sm rounded-xl hover:scale-[1.02] transition-transform shadow-[0_0_15px_rgba(232,197,71,0.3)]">
-              Submit Rating
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Area Stats Modal ── */}
-      {areaStats && (
-        <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => { setAreaStats(null); if (areaRectRef.current && mapRef.current) mapRef.current.removeLayer(areaRectRef.current); }}>
-          <div className="glass rounded-2xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center">
-              <h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Area Stats</h3>
-              <button onClick={() => { setAreaStats(null); if (areaRectRef.current && mapRef.current) mapRef.current.removeLayer(areaRectRef.current); }} className="text-text3 hover:text-text1 text-xl">✕</button>
-            </div>
-
-            <div className="flex items-end gap-2 mb-2">
-              <span className="font-syn font-extrabold text-3xl text-text1">{areaStats.total}</span>
-              <span className="text-text3 text-sm mb-1">pins in area</span>
-            </div>
-
-            <div className="text-xs text-text2 mb-3">
-              Gated: <span className="text-accent font-bold">{areaStats.gatedPercent}%</span>
-            </div>
-
-            <div className="space-y-2">
-              {areaStats.byBhk.map((s: { bhk: number; avg: number; count: number }) => (
-                <div key={s.bhk} className="flex justify-between items-center p-3 rounded-xl bg-surface2 border border-border1">
-                  <span className="font-syn text-sm font-bold text-text2">{s.bhk} BHK <span className="text-text3 font-normal">({s.count})</span></span>
-                  <span className="font-syn text-lg font-bold text-accent">{fmtRent(s.avg)}</span>
+              {[ {label:'📍 Locality', field: 'locality'}, {label:'🏗 Built Quality', field: 'quality'} ].map((item:any) => (
+                <div key={item.field}>
+                  <label className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3 block mb-2">{item.label}</label>
+                  <div className="flex gap-2">
+                    {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal, [item.field]: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${ratingModal[item.field] >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
+                  </div>
                 </div>
               ))}
             </div>
-
-            {areaStats.total === 0 && (
-              <p className="text-text3 text-sm text-center py-4">No pins found in this area. Try drawing a larger region.</p>
-            )}
+            <button onClick={submitRating} className="w-full py-3 bg-accent text-bg font-syn font-extrabold uppercase tracking-widest text-sm rounded-xl hover:scale-[1.02] shadow-lg">Submit</button>
           </div>
         </div>
       )}
 
-      {/* ── Location Search Modal ── */}
-      {showLocationSearch && (
-        <LocationSearchModal
-          city={city}
-          onClose={() => setShowLocationSearch(false)}
-          onSelect={(lat, lng) => {
-            if (mapRef.current) {
-              mapRef.current.flyTo([lat, lng], 17);
-            }
-            setDraftPinLatLng({ lat, lng });
-            setShowLocationSearch(false);
-          }}
-        />
+      {areaStats && (
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => { setAreaStats(null); if (areaRectRef.current && mapRef.current) mapRef.current.removeLayer(areaRectRef.current); }}>
+          <div className="glass rounded-2xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center"><h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Area Stats</h3><button onClick={() => { setAreaStats(null); if (areaRectRef.current && mapRef.current) mapRef.current.removeLayer(areaRectRef.current); }} className="text-text3 text-xl">✕</button></div>
+            <div className="flex items-end gap-2"><span className="font-syn font-extrabold text-3xl text-text1">{areaStats.total}</span><span className="text-text3 text-xs mb-1 uppercase tracking-wider">pins in area</span></div>
+            <div className="space-y-2">
+              {areaStats.byBhk.map((s: any) => (
+                <div key={s.bhk} className="flex justify-between items-center p-3 rounded-xl bg-surface2 border border-border1">
+                  <span className="font-syn text-sm font-bold text-text2 uppercase tracking-tight">{s.bhk} BHK <span className="text-text3 font-normal">({s.count})</span></span>
+                  <span className="font-syn text-lg font-extrabold text-accent">{fmtRent(s.avg)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* ── Onboarding ── */}
+      {showLocationSearch && <LocationSearchModal city={city} onClose={() => setShowLocationSearch(false)} onSelect={(lat, lng) => { mapRef.current?.flyTo([lat, lng], 17); setDraftPinLatLng({ lat, lng }); setShowLocationSearch(false); }} />}
       {showOnboarding && <OnboardingModal onClose={() => { setShowOnboarding(false); localStorage.setItem('has_seen_onboarding', 'true'); }} />}
     </div>
   );
