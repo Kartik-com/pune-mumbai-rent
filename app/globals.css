@@ -58,7 +58,8 @@ body {
 .leaflet-tile-container {
   filter: hue-rotate(224deg) brightness(1.4) contrast(1.05) saturate(1.4) !important;
 }
-.satellite-tiles {
+/* Ensure Satellite tiles are never filtered */
+.satellite-tiles, .satellite-tiles .leaflet-tile-container, .satellite-tiles img {
   filter: none !important;
 }
 

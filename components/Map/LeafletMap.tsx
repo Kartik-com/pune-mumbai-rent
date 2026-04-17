@@ -258,11 +258,11 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       });
     });
 
-    // ── Green Cover Layer (Normal Satellite) ──
-    greenLayerRef.current = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    // ── Green Cover Layer (Google Hybrid Satellite) ──
+    greenLayerRef.current = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
       opacity: 1, 
-      maxZoom: 18, 
-      attribution: 'ESRI',
+      maxZoom: 20, 
+      attribution: 'Google',
       className: 'satellite-tiles'
     });
 
