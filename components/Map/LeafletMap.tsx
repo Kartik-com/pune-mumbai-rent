@@ -208,9 +208,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    L.tileLayer(mapStyle === 'dark' 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 20,
     }).addTo(map);
@@ -283,9 +281,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       }
     });
 
-    const url = mapStyle === 'dark' 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    const url = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
     L.tileLayer(url, {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',

@@ -54,9 +54,9 @@ body {
   font-family: var(--font-outfit), sans-serif;
 }
 
-/* 🌀 Navy Cyber Map Filter */
+/* 🌀 High-Legibility Slate-Blue Map Filter (Inverted Voyager) */
 .leaflet-tile-container {
-  filter: hue-rotate(212deg) brightness(1.5) contrast(0.9) saturate(1.2) !important;
+  filter: invert(100%) hue-rotate(170deg) brightness(1.2) contrast(0.9) saturate(1.2) !important;
 }
 
 [data-theme='light'] .leaflet-tile-container {
