@@ -9,6 +9,14 @@ export async function POST(request: NextRequest) {
     const ip = getIPFromHeaders(request.headers);
     const ip_hash = hashIP(ip);
 
+    const { city, email } = body;
+    if (!city || !email) {
+      return NextResponse.json(
+        { error: 'city and email are required' },
+        { status: 400 }
+      );
+    }
+
     // Validation: Enforce max lengths
     if (email.length > 100 || (body.note && body.note.length > 140)) {
       return NextResponse.json({ error: 'Input too long' }, { status: 400 });
