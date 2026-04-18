@@ -50,16 +50,16 @@ body {
 
 /* Base resets for Leaflet to fit dark theme */
 .leaflet-container {
-  background: #1A1A2E !important;
+  background: #121212 !important;
   font-family: var(--font-outfit), sans-serif;
 }
 
 /* 🌀 Layered Map Styling (High Contrast Labels) */
 [data-theme='dark'] .map-base-tiles {
-  filter: hue-rotate(224deg) brightness(0.9) contrast(1.2) saturate(1.2) !important;
+  filter: hue-rotate(224deg) brightness(1.7) contrast(0.8) saturate(0.8) !important;
 }
 [data-theme='dark'] .map-label-tiles {
-  filter: brightness(1.2) contrast(1.5) !important;
+  filter: brightness(0.85) contrast(1.1) opacity(0.85) !important;
   image-rendering: -webkit-optimize-contrast;
 }
 
