@@ -213,6 +213,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 20,
+      detectRetina: true,
     }).addTo(map);
 
     map.whenReady(() => {
@@ -258,12 +259,13 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       });
     });
 
-    // ── Green Cover Layer (Google Hybrid Satellite) ──
-    greenLayerRef.current = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+    // ── Green Cover Layer (Google Hybrid Satellite - High DPI) ──
+    greenLayerRef.current = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&scale=2', {
       opacity: 1, 
       maxZoom: 20, 
       attribution: 'Google',
-      className: 'satellite-tiles'
+      className: 'satellite-tiles',
+      detectRetina: true,
     });
 
     mapRef.current = map;
@@ -293,6 +295,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     L.tileLayer(url, {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 20,
+      detectRetina: true,
     }).addTo(mapRef.current);
 
     localStorage.setItem('map-style', mapStyle);
