@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster';
@@ -203,7 +203,14 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     if (!mapContainerRef.current || mapRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
-      center: [centerLat, centerLng], zoom, zoomControl: false,
+      center: [centerLat, centerLng], 
+      zoom: zoom || 12, 
+      zoomControl: false,
+      preferCanvas: true,
+      zoomSnap: 0.5,
+      zoomDelta: 0.5,
+      markerZoomAnimation: true,
+      fadeAnimation: true,
     });
 
     L.control.zoom({ position: 'topright' }).addTo(map);
@@ -224,8 +231,10 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     clusterGroupRef.current = L.markerClusterGroup({
       iconCreateFunction: createClusterIcon,
       showCoverageOnHover: false,
-      maxClusterRadius: 50,
+      maxClusterRadius: 40,
       spiderfyOnMaxZoom: true,
+      removeOutsideVisibleBounds: true,
+      animate: true,
     });
     map.addLayer(clusterGroupRef.current!);
 
@@ -236,28 +245,42 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       setShowPinModal(false);
     });
 
-    // ── Metro Lines ──
-    metroLayerRef.current = L.layerGroup().addTo(map);
-    const metroLines = getMetroLines(city);
-    metroLines.forEach((line) => {
-      const coords = line.stations.map(s => s.coords);
-      L.polyline(coords, {
-        color: line.color, weight: 4, opacity: 0.85, lineCap: 'round', lineJoin: 'round',
-      }).addTo(metroLayerRef.current!);
+    // ── Metro Layer Setup ──
+    const metroGroup = L.layerGroup();
+    metroLayerRef.current = metroGroup;
+    if (showMetro) metroGroup.addTo(map);
 
-      line.stations.forEach((station) => {
-        const isIx = station.interchange === true;
-        L.circleMarker(station.coords, {
-          radius: isIx ? 8 : 5,
-          color: isIx ? '#ffffff' : line.color,
-          weight: isIx ? 3 : 2,
-          fillColor: '#0f0f0f',
-          fillOpacity: 1,
-        }).bindTooltip(isIx ? `⬡ ${station.name} — Interchange` : station.name, {
-          direction: 'top', offset: [0, -8], className: 'metro-tooltip',
+    const renderMetro = () => {
+      if (!metroLayerRef.current) return;
+      metroLayerRef.current.clearLayers();
+      const currentZoom = map.getZoom();
+      const weight = currentZoom < 12 ? 1.5 : currentZoom < 14 ? 3 : 5;
+      const radius = currentZoom < 12 ? 3 : currentZoom < 14 ? 5 : 7;
+      
+      const lines = getMetroLines(city);
+      lines.forEach((line) => {
+        const coords = line.stations.map(s => s.coords);
+        L.polyline(coords, {
+          color: line.color, weight, opacity: 0.85, lineCap: 'round', lineJoin: 'round',
         }).addTo(metroLayerRef.current!);
+
+        line.stations.forEach((station) => {
+          const isIx = station.interchange === true;
+          L.circleMarker(station.coords, {
+            radius: isIx ? radius * 1.5 : radius,
+            color: isIx ? '#ffffff' : line.color,
+            weight: isIx ? 3 : 2,
+            fillColor: '#0f0f0f',
+            fillOpacity: 1,
+          }).bindTooltip(isIx ? `⬡ ${station.name} — Interchange` : station.name, {
+            direction: 'top', offset: [0, -8], className: 'metro-tooltip',
+          }).addTo(metroLayerRef.current!);
+        });
       });
-    });
+    };
+
+    map.on('zoomend', renderMetro);
+    renderMetro();
 
     // ── Green Cover Layer (Google Hybrid Satellite - High DPI) ──
     greenLayerRef.current = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&scale=2', {
@@ -303,29 +326,12 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
 
   // ── Refresh Metro on City Change ──
   useEffect(() => {
-    if (!mapRef.current || !metroLayerRef.current) return;
-    metroLayerRef.current.clearLayers();
-
-    const metroLines = getMetroLines(city);
-    metroLines.forEach((line) => {
-      const coords = line.stations.map(s => s.coords);
-      L.polyline(coords, {
-        color: line.color, weight: 4, opacity: 0.85, lineCap: 'round', lineJoin: 'round',
-      }).addTo(metroLayerRef.current!);
-
-      line.stations.forEach((station) => {
-        const isIx = station.interchange === true;
-        L.circleMarker(station.coords, {
-          radius: isIx ? 8 : 5,
-          color: isIx ? '#ffffff' : line.color,
-          weight: isIx ? 3 : 2,
-          fillColor: '#0f0f0f',
-          fillOpacity: 1,
-        }).bindTooltip(isIx ? `⬡ ${station.name} — Interchange` : station.name, {
-          direction: 'top', offset: [0, -8], className: 'metro-tooltip',
-        }).addTo(metroLayerRef.current!);
-      });
-    });
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+    
+    // Trigger the render function defined in the init effect by simulating zoomend or manual call
+    // Actually, since renderMetro was inside the closure, we should move it out or use an event.
+    map.fire('zoomend');
   }, [city]);
 
   // ── Draft Pin Draggable ──
@@ -373,26 +379,28 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     }
   }, [showMetro, showGreen]);
 
-  // ── Filter logic ──
-  const filteredPins = pins.filter((p) => {
-    const pinCat = p.category || 'residential';
-    if (categoryMode !== pinCat) return false;
+  // ── Filter logic (Memoized) ──
+  const filteredPins = useMemo(() => {
+    return pins.filter((p) => {
+      const pinCat = p.category || 'residential';
+      if (categoryMode !== pinCat) return false;
 
-    if (categoryMode === 'residential') {
-      if (filters.bhk.length > 0 && !filters.bhk.includes(p.bhk)) return false;
-      if (filters.furnished !== 'both' && p.furnished !== filters.furnished) return false;
-      if (filters.gated === 'true' && !p.gated) return false;
-      if (filters.gated === 'false' && p.gated) return false;
-      if (filters.flatmateWanted && !p.flatmate_wanted) return false;
-      if (filters.minRating > 0 && p.ratings && p.ratings.avgLocality !== null && p.ratings.avgLocality < filters.minRating) return false;
-    } else {
-      if (filters.commercialType && filters.commercialType !== 'both' && p.sub_type !== filters.commercialType) return false;
-      if (filters.minArea && (!p.sqft || p.sqft < filters.minArea)) return false;
-    }
+      if (categoryMode === 'residential') {
+        if (filters.bhk.length > 0 && !filters.bhk.includes(p.bhk)) return false;
+        if (filters.furnished !== 'both' && p.furnished !== filters.furnished) return false;
+        if (filters.gated === 'true' && !p.gated) return false;
+        if (filters.gated === 'false' && p.gated) return false;
+        if (filters.flatmateWanted && !p.flatmate_wanted) return false;
+        if (filters.minRating > 0 && p.ratings && p.ratings.avgLocality !== null && p.ratings.avgLocality < filters.minRating) return false;
+      } else {
+        if (filters.commercialType && filters.commercialType !== 'both' && p.sub_type !== filters.commercialType) return false;
+        if (filters.minArea && (!p.sqft || p.sqft < filters.minArea)) return false;
+      }
 
-    if (p.rent < filters.minRent || p.rent > filters.maxRent) return false;
-    return true;
-  });
+      if (p.rent < filters.minRent || p.rent > filters.maxRent) return false;
+      return true;
+    });
+  }, [pins, categoryMode, filters]);
 
   // ── Render Markers Effect ──
   useEffect(() => {
