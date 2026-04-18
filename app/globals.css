@@ -59,7 +59,7 @@ body {
   filter: hue-rotate(224deg) brightness(1.7) contrast(0.8) saturate(0.8) !important;
 }
 [data-theme='dark'] .map-label-tiles {
-  filter: brightness(0.85) contrast(1.1) opacity(0.85) !important;
+  filter: brightness(1.05) contrast(1.2) drop-shadow(0px 0px 2px rgba(0,0,0,0.9)) !important;
   image-rendering: -webkit-optimize-contrast;
 }
 
