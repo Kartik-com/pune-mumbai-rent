@@ -254,8 +254,8 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       if (!metroLayerRef.current) return;
       metroLayerRef.current.clearLayers();
       const currentZoom = map.getZoom();
-      const weight = currentZoom < 12 ? 1.5 : currentZoom < 14 ? 3 : 5;
-      const radius = currentZoom < 12 ? 3 : currentZoom < 14 ? 5 : 7;
+      const weight = currentZoom < 12 ? 2 : currentZoom < 14 ? 3 : 4;
+      const radius = currentZoom < 12 ? 2.5 : currentZoom < 14 ? 3.5 : 5;
       
       const lines = getMetroLines(city);
       lines.forEach((line) => {
@@ -311,15 +311,29 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       }
     });
 
-    const url = mapStyle === 'dark' 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    if (mapStyle === 'dark') {
+      // ── Layered Dark Mode (Base + Labels) ──
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 20,
+        detectRetina: true,
+        className: 'map-base-tiles',
+      }).addTo(mapRef.current);
 
-    L.tileLayer(url, {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-      maxZoom: 20,
-      detectRetina: true,
-    }).addTo(mapRef.current);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 20,
+        detectRetina: true,
+        className: 'map-label-tiles',
+        pane: 'overlayPane', // Ensure labels stay above the base but below popups
+      }).addTo(mapRef.current);
+    } else {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 20,
+        detectRetina: true,
+      }).addTo(mapRef.current);
+    }
 
     localStorage.setItem('map-style', mapStyle);
   }, [mapStyle]);

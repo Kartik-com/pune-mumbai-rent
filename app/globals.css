@@ -54,9 +54,13 @@ body {
   font-family: var(--font-outfit), sans-serif;
 }
 
-/* 🌀 Custom Navy Theme (#1A1A2E) - Apply only to dark-theme layers */
-[data-theme='dark'] .leaflet-layer:not(.satellite-tiles) .leaflet-tile-container {
-  filter: hue-rotate(224deg) brightness(1.4) contrast(1.05) saturate(1.4) !important;
+/* 🌀 Layered Map Styling (High Contrast Labels) */
+[data-theme='dark'] .map-base-tiles {
+  filter: hue-rotate(224deg) brightness(0.9) contrast(1.2) saturate(1.2) !important;
+}
+[data-theme='dark'] .map-label-tiles {
+  filter: brightness(1.2) contrast(1.5) !important;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 /* 🛰️ Pure Satellite Override (Zero Filters) */
