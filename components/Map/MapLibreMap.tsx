@@ -369,13 +369,17 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         if (clusterId === undefined) return;
 
         const source = map.getSource('pins') as maplibregl.GeoJSONSource;
-        source.getClusterExpansionZoom(clusterId, (err: Error | null, zoomExt?: number) => {
-          if (err || zoomExt === undefined) return;
-          const geometry = features[0].geometry as { type: 'Point'; coordinates: [number, number] };
-          map.easeTo({ 
-            center: geometry.coordinates, 
-            zoom: zoomExt 
-          });
+        source.getClusterExpansionZoom(clusterId, (err, zoomExt) => {
+          if (err || typeof zoomExt !== 'number') return;
+          
+          const geometry = features[0].geometry;
+          if (geometry && 'coordinates' in geometry) {
+            const coords = geometry.coordinates as [number, number];
+            map.easeTo({ 
+              center: coords, 
+              zoom: zoomExt 
+            });
+          }
         });
       });
 
