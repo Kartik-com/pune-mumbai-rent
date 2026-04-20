@@ -123,6 +123,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const metroLayerRef = useRef<L.LayerGroup | null>(null);
   const labelLayerRef = useRef<L.LayerGroup | null>(null);
+  const roadLayerRef = useRef<L.TileLayer | null>(null);
   const greenLayerRef = useRef<L.TileLayer | null>(null);
 
   // Data
@@ -283,6 +284,37 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
 
     map.on('zoomend', renderMetro);
     renderMetro();
+
+    // ── Deep Zoom Road Enhancement Layer ──
+    // Uses Positron tiles (light) but inverted + opacity to "highlight" roads on dark theme
+    roadLayerRef.current = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+      opacity: 0,
+      maxZoom: 20,
+      className: 'road-highlight-tiles',
+      pane: 'overlayPane',
+    }).addTo(map);
+
+    const updateZoomVisuals = () => {
+      const z = map.getZoom();
+      const container = map.getContainer();
+      
+      // Manage classes for CSS filters
+      container.classList.toggle('map-zoom-mid', z >= 14 && z < 15);
+      container.classList.toggle('map-zoom-high', z >= 15);
+
+      // Manage road highlight visibility
+      if (roadLayerRef.current) {
+        // Only active in dark mode
+        if (mapStyle === 'dark' && z >= 15) {
+          roadLayerRef.current.setOpacity(0.45);
+        } else {
+          roadLayerRef.current.setOpacity(0);
+        }
+      }
+    };
+
+    map.on('zoomend', updateZoomVisuals);
+    updateZoomVisuals();
 
     // ── Area Labels Setup ──
     const labelGroup = L.layerGroup();
