@@ -361,16 +361,19 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       });
 
       // 4. Click Handlers
-      map.on('click', 'clusters', (e) => {
+      map.on('click', 'clusters', (e: maplibregl.MapLayerMouseEvent) => {
         const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
-        const clusterId = features?.[0]?.properties?.cluster_id;
+        if (!features || !features.length) return;
+        
+        const clusterId = features[0].properties?.cluster_id;
         if (clusterId === undefined) return;
+
         const source = map.getSource('pins') as maplibregl.GeoJSONSource;
-        source.getClusterExpansionZoom(clusterId, (err, zoomExt) => {
+        source.getClusterExpansionZoom(clusterId, (err: Error | null, zoomExt?: number) => {
           if (err || zoomExt === undefined) return;
-          const coords = (features[0].geometry as { type: 'Point'; coordinates: [number, number] }).coordinates;
+          const geometry = features[0].geometry as { type: 'Point'; coordinates: [number, number] };
           map.easeTo({ 
-            center: coords, 
+            center: geometry.coordinates, 
             zoom: zoomExt 
           });
         });
@@ -382,7 +385,16 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
-  }, [city, centerLat, centerLng, zoom, mapStyle, showMetro, pinsGeoJSON]); 
+  }, [city, centerLat, centerLng, zoom, mapStyle, showMetro]); 
+
+  // ── Update Source Data ──
+  useEffect(() => {
+    if (!mapRef.current || !mapReady) return;
+    const source = mapRef.current.getSource('pins') as maplibregl.GeoJSONSource;
+    if (source) {
+      source.setData(pinsGeoJSON);
+    }
+  }, [pinsGeoJSON, mapReady]);
 
   // ── Helper to create popup HTML ──
   const createPopupHtml = useCallback((pin: RentPin) => {
