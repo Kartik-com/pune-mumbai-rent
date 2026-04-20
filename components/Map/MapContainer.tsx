@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 
 import MapLoader from '../UI/MapLoader';
 
-const LeafletMap = dynamic(() => import('./LeafletMap'), {
+const MapLibreMap = dynamic(() => import('./MapLibreMap'), {
   ssr: false,
   loading: () => <MapLoader isReady={false} />,
 });
@@ -24,7 +24,7 @@ export default function MapContainer({
 }: MapContainerProps) {
   return (
     <div className="h-full w-full">
-      <LeafletMap
+      <MapLibreMap
         city={city}
         centerLat={centerLat}
         centerLng={centerLng}

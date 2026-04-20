@@ -123,7 +123,6 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const metroLayerRef = useRef<L.LayerGroup | null>(null);
   const labelLayerRef = useRef<L.LayerGroup | null>(null);
-  const roadLayerRef = useRef<L.TileLayer | null>(null);
   const greenLayerRef = useRef<L.TileLayer | null>(null);
 
   // Data
@@ -224,6 +223,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 20,
       detectRetina: true,
+      className: 'map-base-tiles',
     }).addTo(map);
 
     map.whenReady(() => {
@@ -285,36 +285,6 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     map.on('zoomend', renderMetro);
     renderMetro();
 
-    // ── Deep Zoom Road Enhancement Layer ──
-    // Uses Positron tiles (light) but inverted + opacity to "highlight" roads on dark theme
-    roadLayerRef.current = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-      opacity: 0,
-      maxZoom: 20,
-      className: 'road-highlight-tiles',
-      pane: 'overlayPane',
-    }).addTo(map);
-
-    const updateZoomVisuals = () => {
-      const z = map.getZoom();
-      const container = map.getContainer();
-      
-      // Manage classes for CSS filters
-      container.classList.toggle('map-zoom-mid', z >= 14 && z < 15);
-      container.classList.toggle('map-zoom-high', z >= 15);
-
-      // Manage road highlight visibility
-      if (roadLayerRef.current) {
-        // Only active in dark mode
-        if (mapStyle === 'dark' && z >= 15) {
-          roadLayerRef.current.setOpacity(0.45);
-        } else {
-          roadLayerRef.current.setOpacity(0);
-        }
-      }
-    };
-
-    map.on('zoomend', updateZoomVisuals);
-    updateZoomVisuals();
 
     // ── Area Labels Setup ──
     const labelGroup = L.layerGroup();
@@ -388,20 +358,11 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     });
 
     if (mapStyle === 'dark') {
-      // ── Layered Dark Mode (Base + Labels) ──
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
         maxZoom: 20,
         detectRetina: true,
         className: 'map-base-tiles',
-      }).addTo(mapRef.current);
-
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-        maxZoom: 20,
-        detectRetina: true,
-        className: 'map-label-tiles',
-        pane: 'overlayPane', // Ensure labels stay above the base but below popups
       }).addTo(mapRef.current);
     } else {
       L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
