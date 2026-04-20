@@ -195,7 +195,6 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         : 'https://tiles.basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
       center: [centerLng, centerLat],
       zoom: zoom || 12,
-      antialias: true,
     });
 
     map.on('load', () => {

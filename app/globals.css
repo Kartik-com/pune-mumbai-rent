@@ -85,7 +85,8 @@ body {
 }
 
 /* Leaflet Overrides */
-.dark-popup .leaflet-popup-content-wrapper {
+.dark-popup .leaflet-popup-content-wrapper,
+.dark-popup .maplibregl-popup-content {
   background: rgba(24, 24, 24, 0.6);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -96,23 +97,27 @@ body {
   padding: 0;
   overflow: hidden;
   /* Entry animation */
-  animation: popup-enter 0.2s cubic-bezier(.4,0,.2,1) forwards;
+  animation: popup-enter 0.2s cubic-bezier(.4, 0, .2, 1) forwards;
   transform-origin: bottom center;
 }
-.dark-popup .leaflet-popup-content {
+.dark-popup .leaflet-popup-content,
+.dark-popup .maplibregl-popup-content {
   margin: 0;
   line-height: normal;
 }
-.dark-popup .leaflet-popup-tip {
+.dark-popup .leaflet-popup-tip,
+.dark-popup .maplibregl-popup-tip {
   background: var(--surface2);
   border: 1px solid var(--border);
 }
-.dark-popup .leaflet-popup-close-button {
+.dark-popup .leaflet-popup-close-button,
+.dark-popup .maplibregl-popup-close-button {
   color: var(--text2) !important;
   top: 8px !important;
   right: 8px !important;
 }
-.dark-popup .leaflet-popup-close-button:hover {
+.dark-popup .leaflet-popup-close-button:hover,
+.dark-popup .maplibregl-popup-close-button:hover {
   color: var(--text) !important;
 }
 
@@ -196,9 +201,15 @@ a, button, input, select {
 }
 
 /* Clean Custom Map Marker */
-.custom-pin-marker {
+.custom-pin-marker,
+.custom-pill-marker {
   background: transparent !important;
   border: none !important;
+}
+
+.maplibregl-ctrl-logo,
+.maplibregl-ctrl-attrib {
+  display: none !important;
 }
 
 /* Metro Tooltips */
