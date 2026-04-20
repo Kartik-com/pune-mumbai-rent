@@ -168,7 +168,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
     const savedStyle = localStorage.getItem('map-style') as 'dark' | 'light';
     if (savedStyle) setMapStyle(savedStyle);
 
-    if (!localStorage.getItem('has_seen_onboarding')) {
+    if (!localStorage.getItem('seenOnboarding')) {
       setShowOnboarding(true);
     }
     const stored = localStorage.getItem('ip_hash');
@@ -611,7 +611,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       </div>
 
       {/* Controls */}
-      <RightControls onLocate={handleLocate} onHunt={() => setShowFlatHunt(true)} onStats={() => setShowStatsPanel(!showStatsPanel)} onAreaStats={() => { setAreaSelectMode(true); setAreaCorners([]); setAreaStats(null); showToast('Click 2 corners on map.'); }} onToggleMetro={() => setShowMetro(!showMetro)} showMetro={showMetro} onToggleGreen={() => setShowGreen(!showGreen)} showGreen={showGreen} onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} mapStyle={mapStyle} />
+      <RightControls onLocate={handleLocate} onHunt={() => setShowFlatHunt(true)} onStats={() => setShowStatsPanel(!showStatsPanel)} onAreaStats={() => { setAreaSelectMode(true); setAreaCorners([]); setAreaStats(null); showToast('Click 2 corners on map.'); }} onToggleMetro={() => setShowMetro(!showMetro)} showMetro={showMetro} onToggleGreen={() => setShowGreen(!showGreen)} showGreen={showGreen} onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} mapStyle={mapStyle} onHelp={() => setShowOnboarding(true)} />
 
       {/* Floating Bottom CTA */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000] pointer-events-none w-full flex justify-center px-4">
@@ -693,7 +693,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       )}
 
       {showLocationSearch && <LocationSearchModal city={city} onClose={() => setShowLocationSearch(false)} onSelect={(lat, lng) => { mapRef.current?.flyTo([lat, lng], 17); setDraftPinLatLng({ lat, lng }); setShowLocationSearch(false); }} />}
-      {showOnboarding && <OnboardingModal onClose={() => { setShowOnboarding(false); localStorage.setItem('has_seen_onboarding', 'true'); }} />}
+      {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
     </div>
   );
 }
