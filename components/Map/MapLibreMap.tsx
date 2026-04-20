@@ -394,8 +394,8 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   // ── Update Source Data ──
   useEffect(() => {
     if (!mapRef.current || !mapReady) return;
-    const source = mapRef.current.getSource('pins') as maplibregl.GeoJSONSource;
-    if (source) {
+    const source = mapRef.current.getSource('pins') as GeoJSONSource | undefined;
+    if (source && source.setData) {
       source.setData(pinsGeoJSON);
     }
   }, [pinsGeoJSON, mapReady]);

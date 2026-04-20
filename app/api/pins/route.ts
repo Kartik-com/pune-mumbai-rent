@@ -39,9 +39,32 @@ export async function GET(request: NextRequest) {
   const furnished = searchParams.get('furnished');
   if (furnished) query = query.eq('furnished', furnished);
 
-  const { data, error } = await query.order('created_at', {
+  let { data, error } = await query.order('created_at', {
     ascending: false,
   });
+
+  // Fallback for missing columns (category/sub_type)
+  if (error && error.message.includes('column') && (error.message.includes('category') || error.message.includes('sub_type'))) {
+    console.warn('DB columns missing, using fallback select...');
+    const fallbackQuery = supabaseAdmin
+      .from('rent_pins')
+      .select('id, city, lat, lng, bhk, rent, furnished, includes_maint, gated, society, note, occupant, deposit_months, pets_allowed, sqft, ip_hash, report_count, available, available_from, flatmate_wanted, created_at')
+      .eq('city', city)
+      .eq('hidden', false)
+      .lt('report_count', 3);
+    
+    // Re-apply common filters
+    if (bhk) fallbackQuery.eq('bhk', parseInt(bhk));
+    if (minRent) fallbackQuery.gte('rent', parseInt(minRent));
+    if (maxRent) fallbackQuery.lte('rent', parseInt(maxRent));
+    if (gated === 'true') fallbackQuery.eq('gated', true);
+    if (gated === 'false') fallbackQuery.eq('gated', false);
+    if (furnished) fallbackQuery.eq('furnished', furnished);
+
+    const fallbackResult = await fallbackQuery.order('created_at', { ascending: false });
+    data = fallbackResult.data;
+    error = fallbackResult.error;
+  }
 
   if (error) {
     console.error('Pins API Error:', error.message);
@@ -133,13 +156,25 @@ export async function POST(request: NextRequest) {
       flatmate_wanted: body.flatmate_wanted || false,
     };
 
-    const { data, error } = await supabaseAdmin
+    let { data, error } = await supabaseAdmin
       .from('rent_pins')
       .insert(pinData)
       .select(
         'id, city, category, sub_type, lat, lng, bhk, rent, furnished, includes_maint, gated, society, note, occupant, deposit_months, pets_allowed, sqft, ip_hash, available, available_from, flatmate_wanted, created_at'
       )
       .single();
+
+    // Fallback for missing columns on insert
+    if (error && error.message.includes('column') && (error.message.includes('category') || error.message.includes('sub_type'))) {
+      const { category: _, sub_type: __, ...safePinData } = pinData;
+      const fallbackResult = await supabaseAdmin
+        .from('rent_pins')
+        .insert(safePinData)
+        .select('id, city, lat, lng, bhk, rent, furnished, includes_maint, gated, society, note, occupant, deposit_months, pets_allowed, sqft, ip_hash, available, available_from, flatmate_wanted, created_at')
+        .single();
+      data = fallbackResult.data;
+      error = fallbackResult.error;
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
