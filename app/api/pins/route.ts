@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (error) {
+    console.error('Pins API Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
