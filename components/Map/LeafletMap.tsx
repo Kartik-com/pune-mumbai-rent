@@ -17,6 +17,7 @@ import OnboardingModal from '../UI/OnboardingModal';
 import LocationSearchModal from '../UI/LocationSearchModal';
 import MapLoader from '../UI/MapLoader';
 import { getMetroLines } from '../../lib/metroData';
+import { AREA_LABELS } from '../../lib/areaLabels';
 
 // ── Types ──
 export interface RentPin {
@@ -121,6 +122,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const metroLayerRef = useRef<L.LayerGroup | null>(null);
+  const labelLayerRef = useRef<L.LayerGroup | null>(null);
   const greenLayerRef = useRef<L.TileLayer | null>(null);
 
   // Data
@@ -281,6 +283,48 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
 
     map.on('zoomend', renderMetro);
     renderMetro();
+
+    // ── Area Labels Setup ──
+    const labelGroup = L.layerGroup();
+    labelLayerRef.current = labelGroup;
+    labelGroup.addTo(map);
+
+    const renderAreaLabels = () => {
+      if (!labelLayerRef.current || !mapRef.current) return;
+      labelLayerRef.current.clearLayers();
+
+      const currentZoom = mapRef.current.getZoom();
+      if (currentZoom < 15) return;
+
+      const fontSize = currentZoom === 15 ? 14 : currentZoom === 16 ? 16 : 18;
+      const bounds = mapRef.current.getBounds();
+
+      AREA_LABELS.filter(label => label.city === city).forEach(label => {
+        const latLng = L.latLng(label.coords[0], label.coords[1]);
+        if (bounds.contains(latLng)) {
+          const icon = L.divIcon({
+            className: 'area-label-marker',
+            html: `<div style="
+              color: #e0e0e0;
+              font-size: ${fontSize}px;
+              font-weight: 500;
+              text-shadow: 0px 0px 4px rgba(0,0,0,0.9);
+              white-space: nowrap;
+              pointer-events: none;
+              transform: translate(-50%, -50%);
+              font-family: var(--font-outfit), sans-serif;
+            ">${label.name}</div>`,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0]
+          });
+          L.marker(latLng, { icon, interactive: false, zIndexOffset: -500 }).addTo(labelLayerRef.current!);
+        }
+      });
+    };
+
+    map.on('zoomend', renderAreaLabels);
+    map.on('moveend', renderAreaLabels);
+    renderAreaLabels();
 
     // ── Green Cover Layer (Google Hybrid Satellite - High DPI) ──
     greenLayerRef.current = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&scale=2', {
