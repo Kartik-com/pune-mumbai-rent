@@ -7,7 +7,7 @@ const nextConfig = {
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       img-src 'self' blob: data: https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://*.openstreetmap.org https://*.google.com https://*.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
-      connect-src 'self' https://*.supabase.co https://*.openstreetmap.org https://vercel.live https://*.google.com https://*.googleapis.com;
+      connect-src 'self' https://*.supabase.co https://*.openstreetmap.org https://vercel.live https://*.google.com https://*.googleapis.com https://api.ipify.org https://*.basemaps.cartocdn.com;
       worker-src 'self' blob:;
       frame-src 'self' https://vercel.live;
     `.replace(/\s{2,}/g, ' ').trim();
