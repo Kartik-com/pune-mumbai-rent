@@ -361,7 +361,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       });
 
       // 4. Click Handlers
-      map.on('click', 'clusters', async (e) => {
+      map.on('click', 'clusters', async (e: MapLayerMouseEvent) => {
         const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
         if (!features || !features.length) return;
         
@@ -374,8 +374,8 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
         try {
           const zoom = await source.getClusterExpansionZoom(clusterId);
-          if (feature.geometry && 'coordinates' in feature.geometry) {
-            const coords = (feature.geometry as any).coordinates as [number, number];
+          if (feature.geometry.type === 'Point') {
+            const coords = feature.geometry.coordinates as [number, number];
             map.easeTo({ center: coords, zoom });
           }
         } catch (err) {
@@ -389,7 +389,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
-  }, [city, centerLat, centerLng, zoom, mapStyle, showMetro]); 
+  }, [city, centerLat, centerLng, zoom, mapStyle, showMetro, pinsGeoJSON]); 
 
   // ── Update Source Data ──
   useEffect(() => {
