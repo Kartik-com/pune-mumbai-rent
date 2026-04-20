@@ -361,20 +361,20 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       });
 
       // 4. Click Handlers
-      map.on('click', 'clusters', (e: maplibregl.MapLayerMouseEvent) => {
+      map.on('click', 'clusters', (e) => {
         const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
         if (!features || !features.length) return;
         
-        const clusterId = features[0].properties?.cluster_id;
+        const feature = features[0];
+        const clusterId = feature.properties?.cluster_id;
         if (clusterId === undefined) return;
 
         const source = map.getSource('pins') as maplibregl.GeoJSONSource;
         source.getClusterExpansionZoom(clusterId, (err, zoomExt) => {
           if (err || typeof zoomExt !== 'number') return;
           
-          const geometry = features[0].geometry;
-          if (geometry && 'coordinates' in geometry) {
-            const coords = geometry.coordinates as [number, number];
+          if (feature.geometry && 'coordinates' in feature.geometry) {
+            const coords = (feature.geometry as any).coordinates;
             map.easeTo({ 
               center: coords, 
               zoom: zoomExt 
