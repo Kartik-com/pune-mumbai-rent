@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import maplibregl from 'maplibre-gl';
+import maplibregl, { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import Topbar from '../UI/Topbar';
@@ -361,7 +361,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       });
 
       // 4. Click Handlers
-      map.on('click', 'clusters', (e) => {
+      map.on('click', 'clusters', async (e) => {
         const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
         if (!features || !features.length) return;
         
@@ -369,18 +369,18 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         const clusterId = feature.properties?.cluster_id;
         if (clusterId === undefined) return;
 
-        const source = map.getSource('pins') as maplibregl.GeoJSONSource;
-        source.getClusterExpansionZoom(clusterId, (err, zoomExt) => {
-          if (err || typeof zoomExt !== 'number') return;
-          
+        const source = map.getSource('pins') as GeoJSONSource | undefined;
+        if (!source || !source.getClusterExpansionZoom) return;
+
+        try {
+          const zoom = await source.getClusterExpansionZoom(clusterId);
           if (feature.geometry && 'coordinates' in feature.geometry) {
-            const coords = (feature.geometry as any).coordinates;
-            map.easeTo({ 
-              center: coords, 
-              zoom: zoomExt 
-            });
+            const coords = (feature.geometry as any).coordinates as [number, number];
+            map.easeTo({ center: coords, zoom });
           }
-        });
+        } catch (err) {
+          console.error('Cluster zoom error:', err);
+        }
       });
 
       map.on('mouseenter', 'clusters', () => { map.getCanvas().style.cursor = 'pointer'; });
@@ -705,7 +705,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         <button onClick={() => setCategoryMode('commercial')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'}`}>Commercial</button>
       </div>
 
-      <Topbar city={city} stats={stats} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo({ center: [l2, l1], zoom: 16 })} />
+      <Topbar city={city} stats={stats || undefined} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo({ center: [l2, l1], zoom: 16 })} />
 
       {/* Filter Sidebar */}
       <div className={`fixed top-[84px] left-4 bottom-10 w-[260px] z-[1500] glass rounded-2xl overflow-y-auto transition-transform duration-300 ${showFilterSidebar ? 'translate-x-0' : '-translate-x-[300px]'}`}>
