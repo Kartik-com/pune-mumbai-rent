@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 
+interface StatsProp {
+  total: number;
+  addedThisWeek: number;
+  byBhk: Array<{ bhk: number; count: number; avg_rent: number }>;
+}
+
 export default function StatsPanel({
   onClose,
   stats,
 }: {
   onClose: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  stats: any;
+  stats: StatsProp | null;
   city?: string;
 }) {
   const [tab, setTab] = useState<'overall' | 'near'>('overall');
@@ -55,8 +60,7 @@ export default function StatsPanel({
 
             <div className="space-y-2">
               <p className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3">Avg Rent by BHK</p>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {stats.byBhk?.map((s: any) => (
+              {stats.byBhk?.map((s) => (
                 <div key={s.bhk} className="flex justify-between items-center p-3 rounded-xl bg-surface2 border border-border1">
                   <div>
                     <span className="font-syn text-sm font-bold text-text2">{s.bhk} BHK</span>

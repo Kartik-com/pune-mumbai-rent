@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filters } from '../Map/LeafletMap';
+import { Filters } from '../Map/MapLibreMap';
 import TrustBanner from './TrustBanner';
 
 export default function FilterPanel({
