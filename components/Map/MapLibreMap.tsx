@@ -64,6 +64,17 @@ interface MapProps {
   zoom: number;
 }
 
+interface StatsData {
+  byBhk: Array<{ bhk: number; avg_rent: number; count: number }>;
+  total: number;
+  addedThisWeek: number;
+}
+
+interface AreaStatsData {
+  total: number;
+  byBhk: Array<{ bhk: number; avg: number; count: number }>;
+}
+
 // ── Format helpers ──
 function fmtRent(r: number) {
   if (r >= 100000) return `₹${(r / 100000).toFixed(1)}L`;
@@ -93,7 +104,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [userIpHash, setUserIpHash] = useState<string>('');
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<StatsData | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [ratingModal, setRatingModal] = useState<{ pinId: string; locality: number; quality: number } | null>(null);
   const [mapStyle, setMapStyle] = useState<'dark' | 'light'>('dark');
@@ -101,10 +112,8 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
   // Area stats
   const [areaSelectMode, setAreaSelectMode] = useState(false);
-  const [areaStats, setAreaStats] = useState<any>(null);
-
-  // Area stats state
-  const [areaCorners, setAreaCorners] = useState<[number, number][]>([]);
+  const [areaStats, setAreaStats] = useState<AreaStatsData | null>(null);
+  const [, setAreaCorners] = useState<[number, number][]>([]);
 
   // Refs for layer management
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -141,10 +150,10 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
   // ── Transform Pins to GeoJSON ──
   const pinsGeoJSON = useMemo(() => ({
-    type: 'FeatureCollection',
+    type: 'FeatureCollection' as const,
     features: filteredPins.map(p => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [p.lng, p.lat] },
       properties: { ...p }
     }))
   }), [filteredPins]);
@@ -203,7 +212,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       // 1. Setup Sources
       map.addSource('pins', {
         type: 'geojson',
-        data: pinsGeoJSON as any,
+        data: pinsGeoJSON,
         cluster: true,
         clusterMaxZoom: 14,
         clusterRadius: 40
@@ -249,20 +258,20 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       });
 
       // 3. Metro Lines Source & Layer
-      const metroLines = getMetroLines(city);
+      const metroLinesData = getMetroLines(city);
       const metroLinesGeoJSON = {
-        type: 'FeatureCollection',
-        features: metroLines.map(line => ({
-          type: 'Feature',
+        type: 'FeatureCollection' as const,
+        features: metroLinesData.map(line => ({
+          type: 'Feature' as const,
           geometry: {
-            type: 'LineString',
+            type: 'LineString' as const,
             coordinates: line.stations.map(s => [s.coords[1], s.coords[0]]) // MapLibre [lng,lat]
           },
           properties: { color: line.color }
         }))
       };
 
-      map.addSource('metro-lines', { type: 'geojson', data: metroLinesGeoJSON as any });
+      map.addSource('metro-lines', { type: 'geojson', data: metroLinesGeoJSON });
       map.addLayer({
         id: 'metro-lines-layer',
         type: 'line',
@@ -281,15 +290,15 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
       // 4. Area Labels Source & Layer
       const areaLabelsGeoJSON = {
-        type: 'FeatureCollection',
+        type: 'FeatureCollection' as const,
         features: AREA_LABELS.filter(l => l.city === city).map(label => ({
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: [label.coords[1], label.coords[0]] },
+          type: 'Feature' as const,
+          geometry: { type: 'Point' as const, coordinates: [label.coords[1], label.coords[0]] },
           properties: { name: label.name }
         }))
       };
 
-      map.addSource('area-labels', { type: 'geojson', data: areaLabelsGeoJSON as any });
+      map.addSource('area-labels', { type: 'geojson', data: areaLabelsGeoJSON });
       map.addLayer({
         id: 'area-labels-layer',
         type: 'symbol',
@@ -312,15 +321,15 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
       // 5. Metro Stations layer
       const stationsGeoJSON = {
-        type: 'FeatureCollection',
-        features: metroLines.flatMap(line => line.stations.map(s => ({
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: [s.coords[1], s.coords[0]] },
+        type: 'FeatureCollection' as const,
+        features: metroLinesData.flatMap(line => line.stations.map(s => ({
+          type: 'Feature' as const,
+          geometry: { type: 'Point' as const, coordinates: [s.coords[1], s.coords[0]] },
           properties: { name: s.name, color: line.color, isIx: s.interchange === true }
         })))
       };
 
-      map.addSource('metro-stations', { type: 'geojson', data: stationsGeoJSON as any });
+      map.addSource('metro-stations', { type: 'geojson', data: stationsGeoJSON });
       map.addLayer({
         id: 'metro-stations-layer',
         type: 'circle',
@@ -354,20 +363,55 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       // 4. Click Handlers
       map.on('click', 'clusters', (e) => {
         const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
-        const clusterId = features[0].properties.cluster_id;
-        (map.getSource('pins') as any).getClusterExpansionZoom(clusterId, (err: any, zoom: any) => {
-          if (err) return;
-          map.easeTo({ center: (features[0].geometry as any).coordinates, zoom });
+        const clusterId = features?.[0]?.properties?.cluster_id;
+        if (clusterId === undefined) return;
+        const source = map.getSource('pins') as maplibregl.GeoJSONSource;
+        source.getClusterExpansionZoom(clusterId, (err, zoomExt) => {
+          if (err || zoomExt === undefined) return;
+          const coords = (features[0].geometry as { type: 'Point'; coordinates: [number, number] }).coordinates;
+          map.easeTo({ 
+            center: coords, 
+            zoom: zoomExt 
+          });
         });
       });
 
-      map.on('mouseenter', 'clusters', () => map.getCanvas().style.cursor = 'pointer');
-      map.on('mouseleave', 'clusters', () => map.getCanvas().style.cursor = '');
+      map.on('mouseenter', 'clusters', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'clusters', () => { map.getCanvas().style.cursor = ''; });
     });
 
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
-  }, [city]); 
+  }, [city, centerLat, centerLng, zoom, mapStyle, showMetro, pinsGeoJSON]); 
+
+  // ── Helper to create popup HTML ──
+  const createPopupHtml = useCallback((pin: RentPin) => {
+    const isOwner = pin.ip_hash === userIpHash;
+    const ratingHtml = pin.ratings && pin.ratings.count > 0
+      ? `<div style="display:flex;gap:8px;margin-bottom:10px;font-size:11px;color:var(--text2);">
+          <span>📍 Locality: ${pin.ratings.avgLocality?.toFixed(1) ?? '—'}/5</span>
+          <span style="color:var(--text3);">(${pin.ratings.count})</span>
+        </div>`
+      : '';
+
+    return `
+      <div style="padding:12px 14px;min-width:260px;font-family:var(--font-outfit),sans-serif;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="font-weight:800;font-size:24px;color:var(--text);line-height:1;">${pin.rent.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px;">${pin.bhk} BHK · ${pin.furnished || 'Unfurnished'}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+            <div style="background:var(--accent);color:#000;font-size:9px;font-weight:800;padding:3px 6px;border-radius:4px;">${pin.gated ? 'GATED' : 'INDEPENDENT'}</div>
+            ${isOwner ? '<div style="background:var(--purple);color:#fff;font-size:8px;font-weight:800;padding:2px 4px;border-radius:3px;">YOUR PIN</div>' : ''}
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--text2);font-weight:500;margin:0 0 6px;">${pin.society}</p>
+        ${ratingHtml}
+        <button onclick="window.__interestPin__('${pin.id}')" style="width:100%;background:var(--accent);color:#0f0f0f;border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:700;margin-top:10px;">Contact Owner</button>
+      </div>
+    `;
+  }, [userIpHash]);
 
   // ── Update Pins & Markers ──
   useEffect(() => {
@@ -378,12 +422,12 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       const features = map.queryRenderedFeatures({ layers: ['unclustered-point'] });
       
       // Remove old markers
-      markersRef.current.forEach(m => m.remove());
+      markersRef.current.forEach(m => { m.remove(); });
       markersRef.current = [];
 
       features.forEach(f => {
         const pin = f.properties as RentPin;
-        const coords = (f.geometry as any).coordinates;
+        const coords = (f.geometry as { type: 'Point'; coordinates: [number, number] }).coordinates;
         
         const el = document.createElement('div');
         el.className = 'custom-pill-marker';
@@ -400,14 +444,14 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
         el.onclick = (e) => {
           e.stopPropagation();
-          const popup = new maplibregl.Popup({ offset: [0, -15], className: 'dark-popup' })
-            .setLngLat(coords as [number, number])
+          new maplibregl.Popup({ offset: [0, -15], className: 'dark-popup' })
+            .setLngLat(coords)
             .setHTML(createPopupHtml(pin))
             .addTo(map);
         };
 
         const marker = new maplibregl.Marker({ element: el })
-          .setLngLat(coords as [number, number])
+          .setLngLat(coords)
           .addTo(map);
         
         markersRef.current.push(marker);
@@ -416,40 +460,14 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
     map.on('render', updateMarkers);
     return () => { map.off('render', updateMarkers); };
-  }, [mapReady, pins]);
+  }, [mapReady, pins, createPopupHtml]);
 
   // ── Update Source ──
   useEffect(() => {
     if (!mapRef.current || !mapReady) return;
     const source = mapRef.current.getSource('pins') as maplibregl.GeoJSONSource;
-    if (source) source.setData(pinsGeoJSON as any);
+    if (source) source.setData(pinsGeoJSON);
   }, [pinsGeoJSON, mapReady]);
-
-  // ── Helper to create popup HTML ──
-  const createPopupHtml = (pin: RentPin) => {
-    const isOwner = pin.ip_hash === userIpHash;
-    const ratingHtml = pin.ratings && pin.ratings.count > 0
-      ? `<div style="display:flex;gap:8px;margin-bottom:10px;font-size:11px;color:var(--text2);">
-          <span>📍 Locality: ${pin.ratings.avgLocality?.toFixed(1) ?? '—'}/5</span>
-          <span style="color:var(--text3);">(${pin.ratings.count})</span>
-        </div>`
-      : '';
-
-    return `
-      <div style="padding:12px 14px;min-width:260px;font-family:var(--font-outfit),sans-serif;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div>
-            <div style="font-weight:800;font-size:24px;color:var(--text);line-height:1;">${pin.rent.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}</div>
-            <div style="font-size:12px;color:var(--text3);margin-top:4px;">${pin.bhk} BHK · ${pin.furnished || 'Unfurnished'}</div>
-          </div>
-          <div style="background:var(--accent);color:#000;font-size:9px;font-weight:800;padding:3px 6px;border-radius:4px;">${pin.gated ? 'GATED' : 'INDEPENDENT'}</div>
-        </div>
-        <p style="font-size:14px;color:var(--text2);font-weight:500;margin:0 0-6px;">${pin.society}</p>
-        ${ratingHtml}
-        <button onclick="window.__interestPin__('${pin.id}')" style="width:100%;background:var(--accent);color:#0f0f0f;border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:700;margin-top:10px;">Contact Owner</button>
-      </div>
-    `;
-  };
 
   // ── Draft Pin Draggable ──
   useEffect(() => {
@@ -505,8 +523,8 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
               if (!byBhk[p.bhk]) byBhk[p.bhk] = [];
               byBhk[p.bhk].push(p.rent);
             });
-            const bhkStats = Object.entries(byBhk).map(([bhk, rents]) => ({
-              bhk: parseInt(bhk),
+            const bhkStats = Object.entries(byBhk).map(([bhkStr, rents]) => ({
+              bhk: parseInt(bhkStr),
               avg: Math.round(rents.reduce((a, b) => a + b, 0) / rents.length),
               count: rents.length,
             })).sort((a, b) => a.bhk - b.bhk);
@@ -517,15 +535,17 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
             map.getCanvas().style.cursor = '';
             
             // Draw rectangle (temporary)
-            if (map.getSource('selection-rect')) {
-              (map.getSource('selection-rect') as any).setData({
-                type: 'Feature',
+            const sourceRect = map.getSource('selection-rect') as maplibregl.GeoJSONSource;
+            if (sourceRect) {
+              sourceRect.setData({
+                type: 'Feature' as const,
                 geometry: {
-                  type: 'Polygon',
+                  type: 'Polygon' as const,
                   coordinates: [[
                     [minLng, minLat], [maxLng, minLat], [maxLng, maxLat], [minLng, maxLat], [minLng, minLat]
                   ]]
-                }
+                },
+                properties: {}
               });
             }
           }
@@ -572,7 +592,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
     } else mapRef.current.flyTo({ center: [centerLng, centerLat], zoom });
   };
 
-  const handlePinSubmit = async (data: any) => {
+  const handlePinSubmit = async (data: Record<string, unknown>) => {
     if (!draftPinLatLng) return;
     try {
       await fetch('/api/pins', { 
@@ -603,8 +623,14 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
   // ── Global Handlers for Popup Buttons ──
   useEffect(() => {
-    const w = window as any;
-    w.__ratePin__ = (pinId: string) => setRatingModal({ pinId, locality: 0, quality: 0 });
+    const w = window as { 
+      __ratePin__?: (id: string) => void;
+      __reportPin__?: (id: string) => void;
+      __interestPin__?: (id: string) => void;
+      confirm: (msg: string) => boolean;
+      open: (url: string, target: string) => void;
+    };
+    w.__ratePin__ = (pinId: string) => { setRatingModal({ pinId, locality: 0, quality: 0 }); };
     w.__reportPin__ = async (id: string) => {
       try {
         await fetch('/api/pins/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'report' }) });
@@ -613,12 +639,12 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       } catch { showToast('Failed to report.'); }
     };
     w.__interestPin__ = async (id: string) => {
-      if (!confirm('Connect with owner?')) return;
+      if (!w.confirm('Connect with owner?')) return;
       try {
         const res = await fetch(`/api/pins/${id}/reveal`, { method: 'POST' });
-        const data = await res.json();
-        if (!res.ok) { showToast(data.error || 'Error.'); return; }
-        window.open(`https://wa.me/91${data.phone}`, '_blank');
+        const resData = await res.json();
+        if (!res.ok) { showToast(resData.error || 'Error.'); return; }
+        w.open(`https://wa.me/91${resData.phone}`, '_blank');
       } catch { showToast('Error.'); }
     };
   }, [fetchPins, showToast]);
@@ -705,11 +731,21 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setRatingModal(null)}>
           <div className="glass rounded-2xl w-full max-w-sm p-6 space-y-5" onClick={e => e.stopPropagation()}>
             <h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Rate listing</h3>
-              {[ {label:'📍 Locality', field: 'locality'}, {label:'🏗 Built Quality', field: 'quality'} ].map((item: any) => (
+               {[
+                 {label:'📍 Locality', field: 'locality'}, {label:'🏗 Built Quality', field: 'quality'} 
+               ].map((item) => (
                 <div key={item.field}>
                   <label className="text-[10px] font-syn font-bold uppercase tracking-widest text-text3 block mb-2">{item.label}</label>
                   <div className="flex gap-2">
-                    {[1,2,3,4,5].map(n => <button key={n} onClick={() => setRatingModal({ ...ratingModal!, [item.field as 'locality' | 'quality']: n })} className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${(ratingModal as any)[item.field] >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}>{n}</button>)}
+                    {[1,2,3,4,5].map(n => (
+                      <button 
+                        key={n} 
+                        onClick={() => { setRatingModal(prev => prev ? { ...prev, [item.field as 'locality' | 'quality']: n } : null); }} 
+                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${ratingModal && (ratingModal as Record<string, unknown>)[item.field] as number >= n ? 'bg-accent text-bg border-accent shadow-lg scale-105' : 'border-border2 text-text3 opacity-50'}`}
+                      >
+                        {n}
+                      </button>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -720,12 +756,12 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
       {/* Area Stats Modal */}
       {areaStats && (
-        <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => { setAreaStats(null); if (mapRef.current) (mapRef.current.getSource('selection-rect') as any).setData({ type: 'FeatureCollection', features: [] }); }}>
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => { setAreaStats(null); if (mapRef.current) { const s = mapRef.current.getSource('selection-rect') as maplibregl.GeoJSONSource; if (s) s.setData({ type: 'FeatureCollection', features: [] }); } }}>
           <div className="glass rounded-2xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center"><h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Area Stats</h3><button onClick={() => { setAreaStats(null); if (mapRef.current) (mapRef.current.getSource('selection-rect') as any).setData({ type: 'FeatureCollection', features: [] }); }} className="text-text3 text-xl">✕</button></div>
+            <div className="flex justify-between items-center"><h3 className="font-syn font-bold text-lg text-text1 uppercase tracking-widest">Area Stats</h3><button onClick={() => { setAreaStats(null); if (mapRef.current) { const s = mapRef.current.getSource('selection-rect') as maplibregl.GeoJSONSource; if (s) s.setData({ type: 'FeatureCollection', features: [] }); } }} className="text-text3 text-xl">✕</button></div>
             <div className="flex items-end gap-2"><span className="font-syn font-extrabold text-3xl text-text1">{areaStats.total}</span><span className="text-text3 text-xs mb-1 uppercase tracking-wider">pins in area</span></div>
             <div className="space-y-2">
-              {areaStats.byBhk.map((s: any) => (
+              {areaStats.byBhk.map((s: { bhk: number; count: number; avg: number }) => (
                 <div key={s.bhk} className="flex justify-between items-center p-3 rounded-xl bg-surface2 border border-border1">
                   <span className="font-syn text-sm font-bold text-text2 uppercase tracking-tight">{s.bhk} BHK <span className="text-text3 font-normal">({s.count})</span></span>
                   <span className="font-syn text-lg font-extrabold text-accent">{fmtRent(s.avg)}</span>
