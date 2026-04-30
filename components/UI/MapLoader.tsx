@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 export default function MapLoader({ isReady }: { isReady: boolean }) {
-  const [altitude, setAltitude] = useState(80000);
+  const [altitude, setAltitude] = useState(40000);
   const [systemStatus, setSystemStatus] = useState('ORBITAL_STABLE');
 
   useEffect(() => {
@@ -11,15 +11,15 @@ export default function MapLoader({ isReady }: { isReady: boolean }) {
     const altInterval = setInterval(() => {
       setAltitude((prev) => {
         if (prev <= 0) return 0;
-        const drop = Math.floor(Math.random() * 500) + 200;
+        const drop = Math.floor(Math.random() * 800) + 400;
         return prev - drop;
       });
     }, 50);
 
     // Dynamic status updates
-    const statusTimeout = setTimeout(() => setSystemStatus('ENTRY_INITIATED'), 1000);
-    const statusTimeout2 = setTimeout(() => setSystemStatus('THERMAL_SHIELD_ACTIVE'), 3000);
-    const statusTimeout3 = setTimeout(() => setSystemStatus('APPROACHING_VECTOR'), 5000);
+    const statusTimeout = setTimeout(() => setSystemStatus('ENTRY_INITIATED'), 800);
+    const statusTimeout2 = setTimeout(() => setSystemStatus('THERMAL_SHIELD_ACTIVE'), 1800);
+    const statusTimeout3 = setTimeout(() => setSystemStatus('APPROACHING_VECTOR'), 2800);
 
     return () => {
       clearInterval(altInterval);
