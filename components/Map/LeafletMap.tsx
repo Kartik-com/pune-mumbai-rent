@@ -141,6 +141,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
   const [showFlatHunt, setShowFlatHunt] = useState(false);
   const [showMetro, setShowMetro] = useState(true);
   const [showGreen, setShowGreen] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [userIpHash, setUserIpHash] = useState<string>('');
@@ -648,7 +649,21 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
       </div>
 
       {/* Controls */}
-      <RightControls onLocate={handleLocate} onHunt={() => setShowFlatHunt(true)} onStats={() => setShowStatsPanel(!showStatsPanel)} onAreaStats={() => { setAreaSelectMode(true); setAreaCorners([]); setAreaStats(null); showToast('Click 2 corners on map.'); }} onToggleMetro={() => setShowMetro(!showMetro)} showMetro={showMetro} onToggleGreen={() => setShowGreen(!showGreen)} showGreen={showGreen} onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} mapStyle={mapStyle} onHelp={() => setShowOnboarding(true)} />
+      <RightControls 
+        onLocate={handleLocate} 
+        onHunt={() => setShowFlatHunt(true)} 
+        onStats={() => setShowStatsPanel(!showStatsPanel)} 
+        onAreaStats={() => { setAreaSelectMode(true); setAreaCorners([]); setAreaStats(null); showToast('Click 2 corners on map.'); }} 
+        onToggleMetro={() => setShowMetro(!showMetro)} 
+        showMetro={showMetro} 
+        onToggleGreen={() => setShowGreen(!showGreen)} 
+        showGreen={showGreen} 
+        onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
+        showHeatmap={showHeatmap}
+        onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} 
+        mapStyle={mapStyle} 
+        onHelp={() => setShowOnboarding(true)} 
+      />
 
       {/* Floating Bottom CTA */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000] pointer-events-none w-full flex justify-center px-4">
