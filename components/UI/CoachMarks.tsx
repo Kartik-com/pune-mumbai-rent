@@ -40,7 +40,6 @@ export default function CoachMarks({ onFinish }: { onFinish: () => void }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const spotlightRef = useRef<HTMLDivElement>(null);
 
   const updateSpotlight = useCallback(() => {
     const step = STEPS[stepIndex];
@@ -138,7 +137,7 @@ export default function CoachMarks({ onFinish }: { onFinish: () => void }) {
       {/* ── TOOLTIP ── */}
       <div 
         className="fixed z-[10001] w-[300px] glass p-6 rounded-[24px] border border-accent/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-        style={getTooltipStyle() as any}
+        style={getTooltipStyle() as React.CSSProperties}
       >
         {/* Progress Dots */}
         <div className="flex gap-1 mb-4">
