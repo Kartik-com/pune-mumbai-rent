@@ -53,7 +53,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
             {/* Trust Badge */}
             <div className="bg-accent/10 text-accent px-4 py-1.5 rounded-full text-[10px] font-syn font-bold uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              🛡️ WHAT'S LIVE RIGHT NOW
+              🛡️ WHAT&apos;S LIVE RIGHT NOW
             </div>
 
             <h2 className="text-3xl font-syn font-black text-text1 uppercase tracking-tighter leading-none mb-8">
