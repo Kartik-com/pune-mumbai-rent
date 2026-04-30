@@ -26,6 +26,16 @@ const STEPS = [
     ),
     emoji: '🗺️',
   },
+  {
+    title: 'Flat Hunt Matchmaker',
+    desc: 'Looking for a flatmate or a specific flat? Use "Flat Hunt" to create your seeker profile and get matched.',
+    emoji: '🤝',
+  },
+  {
+    title: 'Advanced Map Tools',
+    desc: 'Use "Area Stats" to draw a circle and see average rents, or toggle "Green Cover" for satellite views.',
+    emoji: '🛠️',
+  },
 ];
 
 export default function OnboardingModal({ onClose }: { onClose: () => void }) {
