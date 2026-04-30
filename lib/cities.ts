@@ -15,7 +15,7 @@ export const CITIES: Record<string, CityConfig> = {
     name: 'Pune',
     lat: 18.5204,
     lng: 73.8567,
-    zoom: 12,
+    zoom: 13.5,
     slug: 'pune',
     title: 'Pune Rent Map — Real Rent Prices by Area',
     description:
@@ -58,7 +58,7 @@ export const CITIES: Record<string, CityConfig> = {
     name: 'Mumbai',
     lat: 19.076,
     lng: 72.8777,
-    zoom: 12,
+    zoom: 13.5,
     slug: 'mumbai',
     title: 'Mumbai Rent Map — Real Rent Prices by Area',
     description:

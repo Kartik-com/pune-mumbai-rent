@@ -384,16 +384,16 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         minzoom: 14,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 14, 12, 16, 16, 18, 20],
-          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-          'text-radial-offset': 0.5,
-          'text-justify': 'auto'
+          'text-font': ['Noto Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 12, 16, 22],
+          'text-transform': 'uppercase',
+          'text-letter-spacing': 0.15,
         },
         paint: {
-          'text-color': '#e0e0e0',
-          'text-halo-color': 'rgba(0,0,0,0.8)',
-          'text-halo-width': 2
+          'text-color': '#ffffff',
+          'text-halo-color': 'rgba(0,0,0,0.85)',
+          'text-halo-width': 2,
+          'text-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0, 12.5, 1],
         }
       });
 
