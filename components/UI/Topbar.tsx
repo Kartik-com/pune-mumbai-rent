@@ -18,16 +18,30 @@ export default function Topbar({
   return (
     <header className="fixed top-5 left-0 right-0 z-[2000] px-5 flex items-start justify-between pointer-events-none">
       {/* Left: Brand */}
-      <Link href={`/${city}`} className="glass px-4 py-2.5 rounded-xl flex items-center gap-2.5 group pointer-events-auto shadow-2xl">
-        <div className="w-5 h-5 rounded bg-accent flex items-center justify-center group-hover:scale-110 transition-transform">
-          <span className="text-bg font-syn font-extrabold text-[10px] leading-none">R</span>
+      <Link href={`/${city}`} className="glass px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-2 group pointer-events-auto shadow-2xl">
+        <div className="w-4 h-4 md:w-5 md:h-5 rounded bg-accent flex items-center justify-center group-hover:scale-110 transition-transform">
+          <span className="text-bg font-syn font-extrabold text-[8px] md:text-[10px] leading-none">R</span>
         </div>
-        <span className="font-syn font-bold text-text1 text-sm tracking-widest uppercase">
-          {city}<span className="text-accent"></span>
+        <span className="font-syn font-bold text-text1 text-xs md:text-sm tracking-widest uppercase">
+          {city}
         </span>
       </Link>
 
-      {/* Center: Search + Filter */}
+      {/* Mobile Center: Filter Toggle only */}
+      <div className="md:hidden flex items-center gap-2 pointer-events-auto">
+        {onToggleFilter && (
+            <button 
+              onClick={onToggleFilter}
+              className={`h-9 px-4 rounded-xl font-syn font-bold text-[10px] uppercase tracking-wider transition-colors shadow-2xl border ${
+                showFilters ? 'bg-accent text-on-accent border-accent' : 'glass border-border1 text-text1'
+              }`}
+            >
+              Filters
+            </button>
+          )}
+      </div>
+
+      {/* Desktop Center: Search + Filter */}
       <div className="hidden md:flex flex-col items-center gap-2 pointer-events-auto">
         <div className="flex items-center gap-2">
           {onSelectLocation ? (
