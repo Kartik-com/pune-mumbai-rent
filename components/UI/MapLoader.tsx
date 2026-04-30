@@ -1,138 +1,171 @@
 import React, { useEffect, useState } from 'react';
 
-const STATUS_MESSAGES = [
-  'SCANNING PUNE MARKET',
-  'TRIANGULATING NEIGHBORHOOD PINS',
-  'CALIBRATING PRICE HEATMAPS',
-  'REMOVING BROKERAGE FEES FROM REALITY',
-  'LOCALIZING SECURE DATA FEED',
-  'SYNCHRONIZING WITH NEIGHBORS'
-];
-
 export default function MapLoader({ isReady }: { isReady: boolean }) {
-  const [statusIdx, setStatusIdx] = useState(0);
-  const [coordinates, setCoordinates] = useState({ lat: 18.5204, lng: 73.8567 });
+  const [altitude, setAltitude] = useState(80000);
+  const [systemStatus, setSystemStatus] = useState('ORBITAL_STABLE');
 
   useEffect(() => {
     if (isReady) return;
-    
-    // Cycle status messages
-    const msgInterval = setInterval(() => {
-      setStatusIdx((prev) => (prev + 1) % STATUS_MESSAGES.length);
-    }, 2000);
 
-    // Randomize coordinates for "scanning" effect
-    const coordInterval = setInterval(() => {
-      setCoordinates({
-        lat: 18.5204 + (Math.random() - 0.5) * 0.1,
-        lng: 73.8567 + (Math.random() - 0.5) * 0.1
+    // Fast altitude drop
+    const altInterval = setInterval(() => {
+      setAltitude((prev) => {
+        if (prev <= 0) return 0;
+        const drop = Math.floor(Math.random() * 500) + 200;
+        return prev - drop;
       });
-    }, 100);
+    }, 50);
+
+    // Dynamic status updates
+    const statusTimeout = setTimeout(() => setSystemStatus('ENTRY_INITIATED'), 1000);
+    const statusTimeout2 = setTimeout(() => setSystemStatus('THERMAL_SHIELD_ACTIVE'), 3000);
+    const statusTimeout3 = setTimeout(() => setSystemStatus('APPROACHING_VECTOR'), 5000);
 
     return () => {
-      clearInterval(msgInterval);
-      clearInterval(coordInterval);
+      clearInterval(altInterval);
+      clearTimeout(statusTimeout);
+      clearTimeout(statusTimeout2);
+      clearTimeout(statusTimeout3);
     };
   }, [isReady]);
 
   return (
     <div 
-      className={`fixed inset-0 z-[2500] bg-[#080808] flex items-center justify-center transition-all duration-700 ease-in-out pointer-events-none overflow-hidden ${
-        isReady ? 'opacity-0 scale-110' : 'opacity-100 scale-100'
+      className={`fixed inset-0 z-[2500] bg-[#020205] flex items-center justify-center transition-all duration-1000 ease-in pointer-events-none overflow-hidden ${
+        isReady ? 'opacity-0 scale-[3] blur-2xl' : 'opacity-100 scale-100 blur-0'
       }`}
     >
-      {/* Background Grid */}
-      <div 
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, #e8c547 1px, transparent 1px),
-            linear-gradient(to bottom, #e8c547 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }}
-      />
-
-      {/* Radar Rings */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        {[...Array(3)].map((_, i) => (
+      {/* ── SPACE STARFIELD ── */}
+      <div className="absolute inset-0">
+        {[...Array(50)].map((_, i) => (
           <div 
             key={i}
-            className="absolute rounded-full border border-accent/30 shadow-[0_0_30px_rgba(232,197,71,0.1)]"
+            className="absolute bg-white rounded-full"
             style={{
-              width: '100px',
-              height: '100px',
-              animation: `pulse-ring 4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite`,
-              animationDelay: `${i * 1.3}s`
+              width: Math.random() * 2 + 'px',
+              height: Math.random() * 2 + 'px',
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              opacity: Math.random() * 0.5 + 0.2,
+              animation: `star-float ${Math.random() * 10 + 10}s linear infinite`
             }}
           />
         ))}
       </div>
 
-      {/* Central Focal Point */}
-      <div className="relative flex flex-col items-center">
-        {/* The "Satellite" Crosshair */}
-        <div className="relative w-32 h-32 flex items-center justify-center mb-12">
-          {/* Inner circle */}
-          <div className="absolute w-4 h-4 bg-accent rounded-full shadow-[0_0_20px_#e8c547] animate-pulse" />
-          
-          {/* Spinning Outer Ring */}
-          <div className="absolute inset-0 border-2 border-dashed border-accent/20 rounded-full animate-[spin_10s_linear_infinite]" />
-          
-          {/* Scanning Line */}
-          <div className="absolute inset-0 flex items-center justify-center animate-[spin_3s_linear_infinite]">
-            <div className="w-[50%] h-[1px] bg-gradient-to-r from-transparent to-accent origin-right translate-x-[-100%]" />
-          </div>
+      {/* ── RE-ENTRY SPARKS (Atmospheric Friction) ── */}
+      {!isReady && (
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(15)].map((_, i) => (
+            <div 
+              key={i}
+              className="absolute bg-gradient-to-t from-transparent via-accent/40 to-white/80 w-[1px] rounded-full blur-[1px]"
+              style={{
+                height: Math.random() * 200 + 100 + 'px',
+                left: Math.random() * 100 + '%',
+                top: '-20%',
+                animation: `particle-fall ${Math.random() * 0.5 + 0.3}s linear infinite`,
+                animationDelay: `${Math.random() * 2}s`
+              }}
+            />
+          ))}
+        </div>
+      )}
 
-          {/* Precision Lines */}
-          <div className="absolute -top-4 bottom-4 w-[1px] bg-accent/20" />
-          <div className="absolute -left-4 right-4 h-[1px] bg-accent/20" />
+      {/* ── THE 3D GLOBE (CSS Orbit) ── */}
+      <div className="relative w-[300px] h-[300px] flex items-center justify-center">
+        {/* Glow behind globe */}
+        <div className="absolute inset-0 bg-accent/10 rounded-full blur-[100px] animate-pulse" />
+        
+        {/* The Globe Sphere */}
+        <div className="relative w-full h-full preserve-3d animate-[globe-rotate_20s_linear_infinite]">
+          {/* Latitude/Longitude Rings */}
+          {[...Array(8)].map((_, i) => (
+            <div 
+              key={i}
+              className="absolute inset-0 border border-accent/20 rounded-full"
+              style={{ transform: `rotateY(${i * 22.5}deg)` }}
+            />
+          ))}
+          {[...Array(5)].map((_, i) => (
+            <div 
+              key={i}
+              className="absolute inset-0 border border-accent/20 rounded-full"
+              style={{ transform: `rotateX(${i * 36 - 90}deg)` }}
+            />
+          ))}
+          
+          {/* Core Glow */}
+          <div className="absolute inset-4 border-2 border-accent/40 rounded-full shadow-[inset_0_0_50px_rgba(232,197,71,0.2)]" />
         </div>
 
-        {/* Status Text Block */}
-        <div className="text-center space-y-4 max-w-xs">
-          <div className="space-y-1">
-            <h2 className="text-text1 font-syn font-black text-xs uppercase tracking-[0.3em] h-4">
-              {STATUS_MESSAGES[statusIdx]}
-            </h2>
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-1.5 h-1.5 bg-green rounded-full animate-pulse shadow-[0_0_8px_#3ec87a]" />
-              <span className="text-accent/60 font-syn font-bold text-[9px] uppercase tracking-widest">
-                System Active
-              </span>
+        {/* ── HUD OVERLAY ── */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+            {/* Crosshair */}
+            <div className="w-16 h-16 border border-accent/30 rounded-full flex items-center justify-center">
+                <div className="w-1 h-1 bg-accent rounded-full shadow-[0_0_10px_#e8c547]" />
             </div>
-          </div>
-
-          {/* Coordinate Ticker */}
-          <div className="font-dm text-[10px] text-text3 opacity-40 tabular-nums tracking-widest">
-            LOC: {coordinates.lat.toFixed(6)} N / {coordinates.lng.toFixed(6)} E
-          </div>
-
-          {/* Progress Loading Bar */}
-          <div className="w-48 h-[2px] bg-surface2 rounded-full overflow-hidden relative">
-            <div className="absolute inset-y-0 bg-accent w-1/3 animate-[loading-bar_1.5s_infinite_ease-in-out]" />
-          </div>
+            
+            {/* Ticker Data */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 text-center w-full">
+                <div className="text-[10px] font-syn font-black text-accent tracking-[0.5em] mb-1">{systemStatus}</div>
+                <div className="h-[1px] w-12 bg-accent/50 mx-auto" />
+            </div>
         </div>
       </div>
 
-      {/* Decorative Corner Labels */}
-      <div className="absolute top-8 left-8 text-[8px] font-syn font-bold text-text3/30 uppercase tracking-[0.5em] hidden md:block">
-        Sat_Link_V2.0 // encrypted
+      {/* ── SIDE DATA PANELS (Sci-Fi HUD) ── */}
+      <div className="fixed bottom-12 left-12 space-y-6 hidden md:block">
+        <div className="space-y-1">
+          <div className="text-[8px] font-syn text-text3/50 uppercase tracking-widest">Altitude</div>
+          <div className="text-2xl font-syn font-black text-text1 tabular-nums">
+            {altitude.toLocaleString()} <span className="text-xs text-accent">KM</span>
+          </div>
+        </div>
+        <div className="h-24 w-[2px] bg-gradient-to-t from-accent/50 to-transparent relative">
+            <div className="absolute bottom-0 w-4 h-[1px] bg-accent" />
+            <div 
+                className="absolute w-2 h-2 bg-accent rounded-full -left-[3px] transition-all duration-300" 
+                style={{ bottom: `${(altitude / 80000) * 100}%` }}
+            />
+        </div>
       </div>
-      <div className="absolute bottom-8 right-8 text-[8px] font-syn font-bold text-text3/30 uppercase tracking-[0.5em] hidden md:block text-right">
-        Neighbor_Network // 100% Honest
+
+      <div className="fixed top-12 right-12 text-right hidden md:block">
+        <div className="text-[8px] font-syn text-text3/50 uppercase tracking-widest mb-2">Landing Sector</div>
+        <div className="text-xl font-syn font-black text-text1 uppercase tracking-tighter italic">PUNE_MUMBAI_METRO</div>
+        <div className="mt-4 flex flex-col items-end gap-1">
+            {[...Array(4)].map((_, i) => (
+                <div key={i} className="w-12 h-[2px] bg-accent/20 overflow-hidden">
+                    <div className="h-full bg-accent/60 animate-[loading-bar_2s_infinite]" style={{ animationDelay: i*0.3+'s' }} />
+                </div>
+            ))}
+        </div>
       </div>
 
       <style jsx>{`
-        @keyframes pulse-ring {
-          0% { transform: scale(0.5); opacity: 0; }
-          50% { opacity: 0.5; }
-          100% { transform: scale(6); opacity: 0; }
+        .preserve-3d { transform-style: preserve-3d; }
+        
+        @keyframes globe-rotate {
+          from { transform: rotateX(15deg) rotateY(0deg); }
+          to { transform: rotateX(15deg) rotateY(360deg); }
         }
+        
+        @keyframes star-float {
+          from { transform: translateY(0); }
+          to { transform: translateY(-100px); }
+        }
+        
+        @keyframes particle-fall {
+          0% { transform: translateY(-100vh); opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { transform: translateY(200vh); opacity: 0; }
+        }
+
         @keyframes loading-bar {
-          0% { left: -40%; width: 20%; }
-          50% { width: 40%; }
-          100% { left: 110%; width: 20%; }
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
       `}</style>
     </div>
