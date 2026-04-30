@@ -28,7 +28,7 @@ export default function RightControls({
   showHeatmap: boolean;
 }) {
   return (
-    <div className="fixed right-4 md:top-[84px] top-[140px] flex flex-col md:gap-[10px] gap-2 z-[1000] pointer-events-auto">
+    <div className="fixed right-4 md:top-[84px] top-[100px] flex flex-col md:gap-[10px] gap-2 z-[1000] pointer-events-auto items-end">
       {/* Style Toggle */}
       <button onClick={onToggleStyle} title="Switch Map Style" className="w-9 h-9 md:w-[42px] md:h-[42px] rounded-[10px] glass glass-hover flex items-center justify-center text-text2 hover:text-accent shadow-2xl transition-all">
         {mapStyle === 'dark' ? (
@@ -38,9 +38,14 @@ export default function RightControls({
         )}
       </button>
 
-      {/* Metro (Hide on very small mobile) */}
-      <button onClick={onToggleMetro} title="Toggle Metro" className={`w-9 h-9 md:w-[42px] md:h-[42px] rounded-[10px] hidden sm:flex items-center justify-center shadow-2xl transition-colors ${showMetro ? 'bg-accent text-bg border-accent' : 'glass glass-hover text-text2 hover:text-text1'}`}>
+      {/* Metro */}
+      <button onClick={onToggleMetro} title="Toggle Metro" className={`w-9 h-9 md:w-[42px] md:h-[42px] rounded-[10px] flex items-center justify-center shadow-2xl transition-colors ${showMetro ? 'bg-accent text-bg border-accent' : 'glass glass-hover text-text2 hover:text-text1'}`}>
         <svg fill="currentColor" className="w-4 h-4 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24"><path d="M12 2c-4 0-8 1-8 4v10a2 2 0 0 0 2 2h2v2a1 1 0 1 0 2 0v-2h6v2a1 1 0 1 0 2 0v-2h2a2 2 0 0 0 2-2V6c0-3-4-4-8-4zm-4 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm8 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM6.5 9V6c0-1.8 2.5-2.5 5.5-2.5S17.5 4.2 17.5 6v3h-11z"/></svg>
+      </button>
+
+      {/* Green Cover (Desktop Only) */}
+      <button onClick={onToggleGreen} title="Green Cover" className={`w-9 h-9 md:w-[42px] md:h-[42px] rounded-[10px] hidden md:flex items-center justify-center shadow-2xl transition-colors ${showGreen ? 'bg-green text-bg border-none' : 'glass glass-hover text-text2 hover:text-text1'}`}>
+        <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22v-4"/><path d="M8 18h8"/><path d="M12 18c-3 0-5.5-2.5-6-5.5-.5-3.5 2-6.5 5-7.5.5 0 1.5 0 2 0 3 1 5.5 4 5 7.5-.5 3-3 5.5-6 5.5z"/></svg>
       </button>
 
       {/* Heatmap */}
@@ -48,14 +53,29 @@ export default function RightControls({
         <svg className="w-4 h-4 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
       </button>
 
+      {/* Stats (Desktop Only) */}
+      <button onClick={onStats} title="Live Stats" className="w-[42px] h-[42px] rounded-[10px] hidden md:flex glass glass-hover items-center justify-center text-text2 hover:text-text1 shadow-2xl">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </button>
+
+      {/* Area Stats (Desktop Only) */}
+      <button onClick={onAreaStats} title="Area Stats — Draw" className="w-[42px] h-[42px] rounded-[10px] hidden md:flex glass glass-hover items-center justify-center text-text2 hover:text-accent shadow-2xl">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      </button>
+
+      {/* Flat Hunt (Desktop Only) */}
+      <button onClick={onHunt} title="Flat Hunt" className="w-[42px] h-[42px] rounded-[10px] hidden md:flex glass glass-hover items-center justify-center text-text2 hover:text-text1 shadow-2xl">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+
       {/* Locate */}
       <button onClick={onLocate} title="Locate Me" className="w-9 h-9 md:w-[42px] md:h-[42px] rounded-[10px] glass glass-hover flex items-center justify-center text-text2 hover:text-accent shadow-2xl transition-all">
         <svg className="w-4 h-4 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
       </button>
 
-      {/* Help (Hide on mobile, onboarding covers it) */}
-      <button onClick={onHelp} title="How to Use" className="w-9 h-9 md:w-[42px] md:h-[42px] rounded-[10px] hidden md:flex glass glass-hover items-center justify-center text-accent hover:text-white shadow-2xl transition-all border border-accent/20">
-        <svg className="w-4 h-4 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      {/* Help (Desktop Only) */}
+      <button onClick={onHelp} title="How to Use" className="w-[42px] h-[42px] rounded-[10px] hidden md:flex glass glass-hover items-center justify-center text-accent hover:text-white shadow-2xl transition-all border border-accent/20">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </button>
     </div>
   );
