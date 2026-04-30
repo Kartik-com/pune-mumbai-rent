@@ -35,6 +35,7 @@ export default function LocalityPage({ params }: LocalityPageProps) {
   // Find coordinates in AREA_LABELS
   const label = AREA_LABELS.find(l => l.city === params.city && slugify(l.name) === params.locality);
   
+  const lat = label ? label.coords[0] : cityConfig.lat;
   const lng = label ? label.coords[1] : cityConfig.lng;
   const zoom = label ? 15 : cityConfig.zoom;
 
