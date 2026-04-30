@@ -1,53 +1,37 @@
 import { MetadataRoute } from 'next';
 import { CITIES, slugify } from '@/lib/cities';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pune.rent';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://pune.rent';
 
-  const routes: MetadataRoute.Sitemap = [
+export default function sitemap(): MetadataRoute.Sitemap {
+  const sitemaps: MetadataRoute.Sitemap = [
     {
-      url: baseUrl,
+      url: SITE_URL,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 1.0,
+      priority: 1,
     },
   ];
 
-  // City pages
-  Object.keys(CITIES).forEach((city) => {
-    routes.push({
-      url: `${baseUrl}/${city}`,
+  // Add City Pages
+  Object.keys(CITIES).forEach((citySlug) => {
+    sitemaps.push({
+      url: `${SITE_URL}/${citySlug}`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
     });
 
-    // Neighborhood pages
-    CITIES[city].neighborhoods.forEach((neighborhood) => {
-      routes.push({
-        url: `${baseUrl}/${city}/${slugify(neighborhood)}`,
+    // Add Locality Pages
+    CITIES[citySlug].neighborhoods.forEach((locality) => {
+      sitemaps.push({
+        url: `${SITE_URL}/${citySlug}/${slugify(locality)}`,
         lastModified: new Date(),
         changeFrequency: 'weekly',
-        priority: 0.8,
+        priority: 0.7,
       });
     });
   });
 
-  // Static pages
-  routes.push(
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/terms`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    }
-  );
-
-  return routes;
+  return sitemaps;
 }

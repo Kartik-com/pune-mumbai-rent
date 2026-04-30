@@ -54,15 +54,16 @@ export async function GET(request: NextRequest) {
       .lt('report_count', 3);
     
     // Re-apply common filters
-    if (bhk) fallbackQuery.eq('bhk', parseInt(bhk));
-    if (minRent) fallbackQuery.gte('rent', parseInt(minRent));
-    if (maxRent) fallbackQuery.lte('rent', parseInt(maxRent));
-    if (gated === 'true') fallbackQuery.eq('gated', true);
-    if (gated === 'false') fallbackQuery.eq('gated', false);
-    if (furnished) fallbackQuery.eq('furnished', furnished);
+    let fq = fallbackQuery;
+    if (bhk) fq = fq.eq('bhk', parseInt(bhk));
+    if (minRent) fq = fq.gte('rent', parseInt(minRent));
+    if (maxRent) fq = fq.lte('rent', parseInt(maxRent));
+    if (gated === 'true') fq = fq.eq('gated', true);
+    if (gated === 'false') fq = fq.eq('gated', false);
+    if (furnished) fq = fq.eq('furnished', furnished);
 
-    const fallbackResult = await fallbackQuery.order('created_at', { ascending: false });
-    data = fallbackResult.data;
+    const fallbackResult = await fq.order('created_at', { ascending: false });
+    data = fallbackResult.data as typeof data;
     error = fallbackResult.error;
   }
 
@@ -166,13 +167,14 @@ export async function POST(request: NextRequest) {
 
     // Fallback for missing columns on insert
     if (error && error.message.includes('column') && (error.message.includes('category') || error.message.includes('sub_type'))) {
-      const { category: _, sub_type: __, ...safePinData } = pinData;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { category: _cat, sub_type: _sub, ...safePinData } = pinData;
       const fallbackResult = await supabaseAdmin
         .from('rent_pins')
         .insert(safePinData)
         .select('id, city, lat, lng, bhk, rent, furnished, includes_maint, gated, society, note, occupant, deposit_months, pets_allowed, sqft, ip_hash, available, available_from, flatmate_wanted, created_at')
         .single();
-      data = fallbackResult.data;
+      data = fallbackResult.data as typeof data;
       error = fallbackResult.error;
     }
 
@@ -183,8 +185,8 @@ export async function POST(request: NextRequest) {
     // Return without email/phone, round coordinates
     const pin = {
       ...data,
-      lat: Math.round(data.lat * 1000) / 1000,
-      lng: Math.round(data.lng * 1000) / 1000,
+      lat: Math.round(data!.lat * 1000) / 1000,
+      lng: Math.round(data!.lng * 1000) / 1000,
     };
 
     return NextResponse.json(pin, { status: 201 });

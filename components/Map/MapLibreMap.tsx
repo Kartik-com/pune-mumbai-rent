@@ -13,6 +13,8 @@ import FlatHuntContent from '../UI/FlatHuntContent';
 import OnboardingModal from '../UI/OnboardingModal';
 import LocationSearchModal from '../UI/LocationSearchModal';
 import MapLoader from '../UI/MapLoader';
+import MarketTicker from '../UI/MarketTicker';
+import Footer from '../UI/Footer';
 import { getMetroLines } from '../../lib/metroData';
 import { AREA_LABELS } from '../../lib/areaLabels';
 
@@ -109,6 +111,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   const [ratingModal, setRatingModal] = useState<{ pinId: string; locality: number; quality: number } | null>(null);
   const [mapStyle, setMapStyle] = useState<'dark' | 'light'>('dark');
   const [mapReady, setMapReady] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   // Area stats
   const [areaSelectMode, setAreaSelectMode] = useState(false);
@@ -206,8 +209,18 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       zoom: zoom || 12,
     });
 
+    let resizeObserver: ResizeObserver | null = null;
     map.on('load', () => {
       setMapReady(true);
+      map.resize(); // Ensure canvas fills the container immediately
+      
+      // Auto-resize map when container size changes
+      resizeObserver = new ResizeObserver(() => {
+        map.resize();
+      });
+      if (mapContainerRef.current) {
+        resizeObserver.observe(mapContainerRef.current);
+      }
       
       // 1. Setup Sources
       map.addSource('pins', {
@@ -216,6 +229,71 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         cluster: true,
         clusterMaxZoom: 14,
         clusterRadius: 40
+      });
+
+      map.addSource('heatmap-pins', {
+        type: 'geojson',
+        data: pinsGeoJSON,
+        cluster: false
+      });
+
+      // 1b. Heatmap Layer
+      map.addLayer({
+        id: 'rent-heatmap',
+        type: 'heatmap',
+        source: 'heatmap-pins',
+        maxzoom: 18,
+        layout: {
+          'visibility': 'none'
+        },
+        paint: {
+          // Increase weight as rent increases
+          'heatmap-weight': [
+            'interpolate',
+            ['linear'],
+            ['get', 'rent'],
+            0, 0,
+            100000, 1
+          ],
+          // Increase intensity with zoom
+          'heatmap-intensity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0, 1,
+            15, 3
+          ],
+          // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+          // Begin color ramp at 0-stop with a 0-transparency color
+          // to create a blur-like effect.
+          'heatmap-color': [
+            'interpolate',
+            ['linear'],
+            ['heatmap-density'],
+            0, 'rgba(33,102,172,0)',
+            0.2, 'rgb(103,169,207)',
+            0.4, 'rgb(209,229,240)',
+            0.6, 'rgb(253,219,199)',
+            0.8, 'rgb(239,138,98)',
+            1, 'rgb(178,24,43)'
+          ],
+          // Adjust the heatmap radius by zoom level
+          'heatmap-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            0, 2,
+            15, 20
+          ],
+          // Transition from heatmap to circle layer by zoom level
+          'heatmap-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            7, 1,
+            18, 0.5
+          ]
+        }
       });
 
       // 2. Cluster Layers
@@ -351,13 +429,13 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         id: 'selection-rect-layer',
         type: 'fill',
         source: 'selection-rect',
-        paint: { 'fill-color': 'var(--accent)', 'fill-opacity': 0.1 }
+        paint: { 'fill-color': '#e8c547', 'fill-opacity': 0.1 }
       });
       map.addLayer({
         id: 'selection-rect-outline',
         type: 'line',
         source: 'selection-rect',
-        paint: { 'line-color': 'var(--accent)', 'line-width': 2 }
+        paint: { 'line-color': '#e8c547', 'line-width': 2 }
       });
 
       // 4. Click Handlers
@@ -385,11 +463,29 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
       map.on('mouseenter', 'clusters', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'clusters', () => { map.getCanvas().style.cursor = ''; });
+
+      // ── CLICK TO PIN ──
+      map.on('click', (e) => {
+        // Ignore if clicking a feature
+        const features = map.queryRenderedFeatures(e.point, {
+          layers: ['clusters', 'unclustered-point']
+        });
+        if (features.length > 0 || areaSelectMode) return;
+
+        // Drop draft pin
+        setDraftPinLatLng({ lat: e.lngLat.lat, lng: e.lngLat.lng });
+        showToast('Draggable pin dropped. Confirm to continue.');
+      });
     });
 
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
-  }, [city, centerLat, centerLng, zoom, mapStyle, showMetro, pinsGeoJSON]); 
+    return () => { 
+      if (resizeObserver) resizeObserver.disconnect();
+      map.remove(); 
+      mapRef.current = null; 
+      setMapReady(false); 
+    };
+  }, [city, centerLat, centerLng, zoom, mapStyle]); 
 
   // ── Update Source Data ──
   useEffect(() => {
@@ -483,7 +579,27 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
     if (!mapRef.current || !mapReady) return;
     const source = mapRef.current.getSource('pins') as maplibregl.GeoJSONSource;
     if (source) source.setData(pinsGeoJSON);
+    
+    const heatSource = mapRef.current.getSource('heatmap-pins') as maplibregl.GeoJSONSource;
+    if (heatSource) heatSource.setData(pinsGeoJSON);
   }, [pinsGeoJSON, mapReady]);
+
+  // ── Sync Heatmap Visibility ──
+  useEffect(() => {
+    if (!mapRef.current || !mapReady) return;
+    mapRef.current.setLayoutProperty('rent-heatmap', 'visibility', showHeatmap ? 'visible' : 'none');
+    
+    // Dim the clusters/markers when heatmap is on for better contrast
+    if (showHeatmap) {
+      if (mapRef.current.getLayer('clusters')) mapRef.current.setPaintProperty('clusters', 'circle-opacity', 0.2);
+      if (mapRef.current.getLayer('cluster-count')) mapRef.current.setPaintProperty('cluster-count', 'text-opacity', 0.2);
+      markersRef.current.forEach(m => m.getElement().style.opacity = '0.3');
+    } else {
+      if (mapRef.current.getLayer('clusters')) mapRef.current.setPaintProperty('clusters', 'circle-opacity', 1);
+      if (mapRef.current.getLayer('cluster-count')) mapRef.current.setPaintProperty('cluster-count', 'text-opacity', 1);
+      markersRef.current.forEach(m => m.getElement().style.opacity = '1');
+    }
+  }, [showHeatmap, mapReady]);
 
   // ── Draft Pin Draggable ──
   useEffect(() => {
@@ -579,15 +695,6 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
     if (mapRef.current) mapRef.current.flyTo({ center: [centerLng, centerLat], zoom, duration: 1500 });
   }, [city, centerLat, centerLng, zoom]);
 
-  // ── Style Swap ──
-  useEffect(() => {
-    if (!mapRef.current || !mapReady) return;
-    const styleUrl = mapStyle === 'dark' 
-      ? 'https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-      : 'https://tiles.basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
-    mapRef.current.setStyle(styleUrl);
-    localStorage.setItem('map-style', mapStyle);
-  }, [mapStyle, mapReady]);
 
   // ── Handlers ──
   const handleLocate = () => {
@@ -696,7 +803,9 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
   return (
     <div className="relative w-full h-screen bg-bg overflow-hidden" data-theme={mapStyle}>
-      <div ref={mapContainerRef} className="absolute inset-0 z-[100]" />
+      <div className={`absolute inset-0 z-[100] ${areaSelectMode ? 'drawing-mode' : ''}`}>
+        <div ref={mapContainerRef} className="w-full h-full" />
+      </div>
       <MapLoader isReady={mapReady} />
 
       {/* Category Toggle */}
@@ -705,7 +814,11 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         <button onClick={() => setCategoryMode('commercial')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'}`}>Commercial</button>
       </div>
 
-      <Topbar city={city} stats={stats || undefined} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo({ center: [l2, l1], zoom: 16 })} />
+      <MarketTicker pins={pins} />
+
+      <div className="mt-7">
+        <Topbar city={city} stats={stats || undefined} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo({ center: [l2, l1], zoom: 16 })} />
+      </div>
 
       {/* Filter Sidebar */}
       <div className={`fixed top-[84px] left-4 bottom-10 w-[260px] z-[1500] glass rounded-2xl overflow-y-auto transition-transform duration-300 ${showFilterSidebar ? 'translate-x-0' : '-translate-x-[300px]'}`}>
@@ -713,7 +826,23 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       </div>
 
       {/* Controls */}
-      <RightControls onLocate={handleLocate} onHunt={() => setShowFlatHunt(true)} onStats={() => setShowStatsPanel(!showStatsPanel)} onAreaStats={() => { setAreaSelectMode(true); showToast('Click 2 corners on map.'); }} onToggleMetro={() => setShowMetro(!showMetro)} showMetro={showMetro} onToggleGreen={() => setShowGreen(!showGreen)} showGreen={showGreen} onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} mapStyle={mapStyle} onHelp={() => setShowOnboarding(true)} />
+      <RightControls 
+        onLocate={handleLocate} 
+        onHunt={() => setShowFlatHunt(true)} 
+        onStats={() => setShowStatsPanel(!showStatsPanel)} 
+        onAreaStats={() => { setAreaSelectMode(true); showToast('Click 2 corners on map.'); }} 
+        onToggleMetro={() => setShowMetro(!showMetro)} 
+        showMetro={showMetro} 
+        onToggleGreen={() => setShowGreen(!showGreen)} 
+        showGreen={showGreen} 
+        onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
+        showHeatmap={showHeatmap}
+        onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} 
+        mapStyle={mapStyle} 
+        onHelp={() => setShowOnboarding(true)} 
+      />
+
+      <Footer />
 
       {/* Floating Bottom CTA */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000] pointer-events-none w-full flex justify-center px-4">
@@ -741,6 +870,18 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       {toastMessage && <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] glass rounded-xl px-6 py-3 text-text1 font-syn font-bold text-sm shadow-2xl animate-[popup-enter_0.2s_ease]">{toastMessage}</div>}
       {showLocationSearch && <LocationSearchModal city={city} onClose={() => setShowLocationSearch(false)} onSelect={(lat, lng) => { mapRef.current?.flyTo({ center: [lng, lat], zoom: 17 }); setDraftPinLatLng({ lat, lng }); setShowLocationSearch(false); }} />}
       {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
+      
+      {/* Draft Pin Confirm Button */}
+      {draftPinLatLng && !showPinModal && (
+        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[2500] animate-[popup-enter_0.3s_ease]">
+          <button 
+            onClick={() => setShowPinModal(true)}
+            className="glass bg-accent text-bg px-8 py-4 rounded-2xl font-syn font-black uppercase tracking-[0.2em] shadow-[0_20px_40px_rgba(232,197,71,0.3)] hover:scale-105 active:scale-95 transition-all border-none"
+          >
+            Confirm Location 📍
+          </button>
+        </div>
+      )}
 
       {/* Rating Modal */}
       {ratingModal && (

@@ -1,0 +1,16 @@
+{
+  "name": "Pune Rent Map",
+  "short_name": "Pune Rent",
+  "description": "Real rent prices reported by the community.",
+  "start_url": "/pune",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#e8c547",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
