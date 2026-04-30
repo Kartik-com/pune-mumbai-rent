@@ -84,7 +84,7 @@ export default function CoachMarks({ onFinish }: { onFinish: () => void }) {
   };
 
   const handleFinish = () => {
-    localStorage.setItem('seenTour', 'true');
+    localStorage.setItem('seenTour_v2', 'true');
     setIsVisible(false);
     setTimeout(onFinish, 300);
   };
