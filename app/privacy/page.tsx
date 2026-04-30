@@ -29,7 +29,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-xl font-syn font-bold text-text1 uppercase tracking-widest mb-4">3. Contact Requests</h2>
           <p>
-            When you request to reveal an owner's contact, we log your hashed IP to enforce our daily limits (5 reveals per day). This ensures the data remains available for genuine seekers and isn't scraped by bots.
+            When you request to reveal an owner&apos;s contact, we log your hashed IP to enforce our daily limits (5 reveals per day). This ensures the data remains available for genuine seekers and isn&apos;t scraped by bots.
           </p>
         </section>
 

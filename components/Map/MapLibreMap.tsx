@@ -485,6 +485,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       mapRef.current = null; 
       setMapReady(false); 
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city, centerLat, centerLng, zoom, mapStyle]); 
 
   // ── Update Source Data ──

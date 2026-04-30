@@ -15,7 +15,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-syn font-bold text-text1 uppercase tracking-widest mb-4">1. Community Data</h2>
           <p>
-            All data on this map is provided by the community on an "as-is" basis. We do not verify every pin manually. Users are responsible for the accuracy of the data they report.
+            All data on this map is provided by the community on an &quot;as-is&quot; basis. We do not verify every pin manually. Users are responsible for the accuracy of the data they report.
           </p>
         </section>
 

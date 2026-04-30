@@ -78,7 +78,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
             </div>
 
             <p className="text-xs text-text2 leading-relaxed mb-10 px-2 font-dm">
-              Real data from real neighbours. If something looks off — report it. You're the <span className="text-text1 font-bold">fact-checker</span> for your neighbourhood.
+              Real data from real neighbours. If something looks off — report it. You&apos;re the <span className="text-text1 font-bold">fact-checker</span> for your neighbourhood.
             </p>
 
             <div className="w-full space-y-3">
@@ -86,7 +86,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
                 onClick={handleStart}
                 className="w-full bg-accent text-bg py-4 rounded-2xl font-syn font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                Let's start, I'll keep it honest
+                Let&apos;s start, I&apos;ll keep it honest
               </button>
               
               <button 
