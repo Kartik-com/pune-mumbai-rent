@@ -168,9 +168,6 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
     const savedStyle = localStorage.getItem('map-style') as 'dark' | 'light';
     if (savedStyle) setMapStyle(savedStyle);
 
-    if (!localStorage.getItem('seenOnboarding')) {
-      setShowOnboarding(true);
-    }
     const stored = localStorage.getItem('ip_hash');
     if (stored) { setUserIpHash(stored); return; }
     fetch('https://api.ipify.org?format=json').then(r => r.json()).then(async (data) => {
@@ -179,6 +176,12 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       setUserIpHash(hash);
     }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (mapReady && !localStorage.getItem('seenTour_v2')) {
+      setShowOnboarding(true);
+    }
+  }, [mapReady]);
 
   // ── Fetch pins ──
   const fetchPins = useCallback(async () => {
