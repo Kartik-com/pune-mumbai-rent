@@ -447,7 +447,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
               map.setPaintProperty(layer.id, 'text-color', '#ffffff');
               map.setPaintProperty(layer.id, 'text-halo-color', 'rgba(0,0,0,0.8)');
               map.setPaintProperty(layer.id, 'text-halo-width', 1.5);
-            } catch (_err) {
+            } catch {
               // Some layers might not have these properties
             }
           }
