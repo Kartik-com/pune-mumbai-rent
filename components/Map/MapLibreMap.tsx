@@ -11,6 +11,7 @@ import StatsPanel from '../UI/StatsPanel';
 import PinModal from '../UI/PinModal';
 import FlatHuntContent from '../UI/FlatHuntContent';
 import OnboardingModal from '../UI/OnboardingModal';
+import CoachMarks from '../UI/CoachMarks';
 import LocationSearchModal from '../UI/LocationSearchModal';
 import MapLoader from '../UI/MapLoader';
 import MarketTicker from '../UI/MarketTicker';
@@ -104,6 +105,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   const [showMetro, setShowMetro] = useState(true);
   const [showGreen, setShowGreen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [userIpHash, setUserIpHash] = useState<string>('');
   const [stats, setStats] = useState<StatsData | null>(null);
@@ -821,7 +823,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   return (
     <div className="relative w-full h-screen bg-bg overflow-hidden" data-theme={mapStyle}>
       <div className={`absolute inset-0 z-[100] ${areaSelectMode ? 'drawing-mode' : ''}`}>
-        <div ref={mapContainerRef} className="w-full h-full" />
+        <div id="map-area" ref={mapContainerRef} className="w-full h-full" />
       </div>
       <MapLoader isReady={mapReady} />
 
@@ -859,7 +861,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
             showGreen={showGreen} 
             onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} 
             mapStyle={mapStyle} 
-            onHelp={() => setShowOnboarding(true)} 
+            onHelp={() => setShowTour(true)} 
             onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
             showHeatmap={showHeatmap}
           />
@@ -869,7 +871,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           {/* Floating Bottom CTA */}
           <div className="fixed bottom-6 left-0 right-0 z-[2000] pointer-events-none w-full flex justify-center px-4">
             <div className="flex flex-col items-center gap-3 w-full max-w-sm">
-              <div className="glass px-4 py-2 rounded-xl pointer-events-auto shadow-2xl flex items-center gap-3 border border-border1 animate-[fade-in_0.5s_ease] whitespace-nowrap overflow-hidden">
+                  <div id="pin-cta-container" className="glass px-4 py-2 rounded-xl pointer-events-auto shadow-2xl flex items-center gap-3 border border-border1 animate-[fade-in_0.5s_ease] whitespace-nowrap overflow-hidden">
                  <span className="w-2 h-2 rounded-full bg-green animate-pulse flex-shrink-0" />
                  <span className="font-syn font-bold text-[10px] md:text-[11px] text-text1 uppercase tracking-widest">{pins.length} LIVE RENTS</span>
                  <div className="w-[1px] h-3 bg-border2" />
@@ -893,7 +895,8 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       {showFlatHunt && <FlatHuntContent city={city} onClose={() => setShowFlatHunt(false)} onSubmitSeeker={() => { setShowFlatHunt(false); showToast('Match profile saved!'); fetchPins(); }} />}
       {toastMessage && <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] glass rounded-xl px-6 py-3 text-text1 font-syn font-bold text-sm shadow-2xl animate-[popup-enter_0.2s_ease]">{toastMessage}</div>}
       {showLocationSearch && <LocationSearchModal city={city} onClose={() => setShowLocationSearch(false)} onSelect={(lat, lng) => { mapRef.current?.flyTo({ center: [lng, lat], zoom: 17 }); setDraftPinLatLng({ lat, lng }); setShowLocationSearch(false); }} />}
-      {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
+      {showOnboarding && <OnboardingModal onClose={() => { setShowOnboarding(false); setShowTour(true); }} />}
+      {showTour && <CoachMarks onFinish={() => setShowTour(false)} />}
       
       {/* Draft Pin Confirm Button */}
       {draftPinLatLng && !showPinModal && (

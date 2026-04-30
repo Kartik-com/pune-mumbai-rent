@@ -19,7 +19,7 @@ export default function Topbar({
   const [showMobileSearch, setShowMobileSearch] = React.useState(false);
 
   return (
-    <header className="fixed top-5 left-0 right-0 z-[2000] px-5 flex items-start justify-between pointer-events-none">
+    <header id="topbar-nav" className="fixed top-5 left-0 right-0 z-[2000] px-5 flex items-start justify-between pointer-events-none">
       {/* Left: Brand */}
       <Link href={`/${city}`} className="glass px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-2 group pointer-events-auto shadow-2xl">
         <div className="w-4 h-4 md:w-5 md:h-5 rounded bg-accent flex items-center justify-center group-hover:scale-110 transition-transform">
