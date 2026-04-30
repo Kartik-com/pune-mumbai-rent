@@ -438,6 +438,22 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         paint: { 'line-color': '#e8c547', 'line-width': 2 }
       });
 
+      // ── BRIGHTEN BASE LABELS ──
+      const style = map.getStyle();
+      if (style && style.layers) {
+        style.layers.forEach(layer => {
+          if (layer.type === 'symbol') {
+            try {
+              map.setPaintProperty(layer.id, 'text-color', '#ffffff');
+              map.setPaintProperty(layer.id, 'text-halo-color', 'rgba(0,0,0,0.8)');
+              map.setPaintProperty(layer.id, 'text-halo-width', 1.5);
+            } catch (err) {
+              // Some layers might not have these properties
+            }
+          }
+        });
+      }
+
       // 4. Click Handlers
       map.on('click', 'clusters', async (e: MapLayerMouseEvent) => {
         const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
