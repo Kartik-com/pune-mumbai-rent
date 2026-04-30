@@ -31,8 +31,8 @@ export default function MapLoader({ isReady }: { isReady: boolean }) {
 
   return (
     <div 
-      className={`fixed inset-0 z-[2500] bg-[#020205] flex items-center justify-center transition-all duration-1000 ease-in pointer-events-none overflow-hidden ${
-        isReady ? 'opacity-0 scale-[3] blur-2xl' : 'opacity-100 scale-100 blur-0'
+      className={`fixed inset-0 z-[5000] bg-[#020205] flex items-center justify-center transition-all duration-1000 ease-in overflow-hidden ${
+        isReady ? 'opacity-0 scale-[3] blur-2xl pointer-events-none' : 'opacity-100 scale-100 blur-0 pointer-events-auto'
       }`}
     >
       {/* ── SPACE STARFIELD ── */}

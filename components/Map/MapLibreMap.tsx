@@ -811,6 +811,17 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       });
       map.addLayer({
         id: 'satellite-layer',
+    // Green Cover
+    if (map.getLayer('satellite-layer')) {
+      map.setLayoutProperty('satellite-layer', 'visibility', showGreen ? 'visible' : 'none');
+    } else if (showGreen) {
+      map.addSource('google-satellite', {
+        type: 'raster',
+        tiles: ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&scale=2'],
+        tileSize: 256
+      });
+      map.addLayer({
+        id: 'satellite-layer',
         type: 'raster',
         source: 'google-satellite',
         layout: { 'visibility': 'visible' }
@@ -825,66 +836,68 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       </div>
       <MapLoader isReady={mapReady} />
 
-      {/* Category Toggle */}
-      <div className="absolute top-[100px] left-1/2 -translate-x-1/2 z-[2000] glass px-1.5 py-1.5 rounded-2xl flex gap-1 shadow-2xl pointer-events-auto border border-border1 animate-[popup-enter_0.3s_ease]">
-        <button onClick={() => setCategoryMode('residential')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'residential' ? 'bg-accent text-on-accent shadow-md' : 'text-text3 hover:text-text2'}`}>Residential</button>
-        <button onClick={() => setCategoryMode('commercial')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'}`}>Commercial</button>
-      </div>
+      {mapReady && (
+        <>
+          <MarketTicker pins={pins} />
 
-      <MarketTicker pins={pins} />
-
-      <div className="mt-7">
-        <Topbar city={city} stats={stats || undefined} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo({ center: [l2, l1], zoom: 16 })} />
-      </div>
-
-      {/* Filter Sidebar */}
-      <div className={`fixed md:top-[84px] top-0 md:left-4 left-0 md:bottom-10 bottom-0 md:w-[260px] w-full z-[2500] glass md:rounded-2xl overflow-y-auto transition-transform duration-300 ${showFilterSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="md:hidden flex justify-end p-4 border-b border-border1">
-          <button onClick={() => setShowFilterSidebar(false)} className="text-text1 font-syn font-black uppercase text-xs">Close ✕</button>
-        </div>
-        <FilterPanel filters={filters} setFilters={setFilters} city={city} categoryMode={categoryMode} />
-      </div>
-
-      {/* Controls */}
-      <RightControls 
-        onLocate={handleLocate} 
-        onHunt={() => setShowFlatHunt(true)} 
-        onStats={() => setShowStatsPanel(!showStatsPanel)} 
-        onAreaStats={() => { setAreaSelectMode(true); showToast('Click 2 corners on map.'); }} 
-        onToggleMetro={() => setShowMetro(!showMetro)} 
-        showMetro={showMetro} 
-        onToggleGreen={() => setShowGreen(!showGreen)} 
-        showGreen={showGreen} 
-        onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
-        showHeatmap={showHeatmap}
-        onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} 
-        mapStyle={mapStyle} 
-        onHelp={() => setShowOnboarding(true)} 
-      />
-
-      <Footer />
-
-      {/* Floating Bottom CTA */}
-      <div className="fixed bottom-6 left-0 right-0 z-[2000] pointer-events-none w-full flex justify-center px-4">
-        <div className="flex flex-col items-center gap-3 w-full max-w-sm">
-          {/* Live Count Bar */}
-          <div className="glass px-4 py-2 rounded-xl pointer-events-auto shadow-2xl flex items-center gap-3 border border-border1 animate-[fade-in_0.5s_ease] whitespace-nowrap overflow-hidden">
-             <span className="w-2 h-2 rounded-full bg-green animate-pulse flex-shrink-0" />
-             <span className="font-syn font-bold text-[10px] md:text-[11px] text-text1 uppercase tracking-widest">{pins.length} LIVE RENTS</span>
-             <div className="w-[1px] h-3 bg-border2" />
-             <button onClick={() => setShowLocationSearch(true)} className="text-accent font-syn font-extrabold text-[10px] md:text-[11px] uppercase truncate">Pin Your Rent 📍</button>
+          <div className="mt-7">
+            <Topbar city={city} stats={stats || undefined} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo({ center: [l2, l1], zoom: 16 })} />
           </div>
 
-          {/* Main Action Button */}
-          <button onClick={() => setShowFlatHunt(true)} className="glass w-full md:w-auto px-4 md:px-6 py-3 md:py-4 rounded-2xl flex items-center gap-3 md:gap-4 group pointer-events-auto shadow-2xl border border-border2 hover:border-accent transition-all active:scale-95">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-accent flex items-center justify-center text-on-accent text-lg md:text-xl flex-shrink-0">🏠</div>
-            <div className="flex flex-col items-start text-left">
-              <span className="text-text1 font-syn font-extrabold text-[10px] md:text-xs uppercase tracking-widest">Find Flat or Tenants</span>
-              <span className="text-text3 font-dm text-[9px] md:text-[11px]">Join the neighborhood matchmaker</span>
+          {/* Category Toggle */}
+          <div className="absolute top-[100px] left-1/2 -translate-x-1/2 z-[2000] glass px-1.5 py-1.5 rounded-2xl flex gap-1 shadow-2xl pointer-events-auto border border-border1 animate-[popup-enter_0.3s_ease]">
+            <button onClick={() => setCategoryMode('residential')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'residential' ? 'bg-accent text-on-accent shadow-md' : 'text-text3 hover:text-text2'}`}>Residential</button>
+            <button onClick={() => setCategoryMode('commercial')} className={`px-4 py-2 rounded-xl text-xs font-syn font-bold uppercase tracking-widest transition-all ${categoryMode === 'commercial' ? 'bg-purple text-white shadow-md' : 'text-text3 hover:text-text2'}`}>Commercial</button>
+          </div>
+
+          {/* Filter Sidebar */}
+          <div className={`fixed md:top-[84px] top-0 md:left-4 left-0 md:bottom-10 bottom-0 md:w-[260px] w-full z-[2500] glass md:rounded-2xl overflow-y-auto transition-transform duration-300 ${showFilterSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className="md:hidden flex justify-end p-4 border-b border-border1">
+              <button onClick={() => setShowFilterSidebar(false)} className="text-text1 font-syn font-black uppercase text-xs">Close ✕</button>
             </div>
-          </button>
-        </div>
-      </div>
+            <FilterPanel filters={filters} setFilters={setFilters} city={city} categoryMode={categoryMode} />
+          </div>
+
+          {/* Controls */}
+          <RightControls 
+            onLocate={handleLocate} 
+            onHunt={() => setShowFlatHunt(true)} 
+            onStats={() => setShowStatsPanel(!showStatsPanel)} 
+            onAreaStats={() => { setAreaSelectMode(true); showToast('Click 2 corners on map.'); }} 
+            onToggleMetro={() => setShowMetro(!showMetro)} 
+            showMetro={showMetro} 
+            onToggleGreen={() => setShowGreen(!showGreen)} 
+            showGreen={showGreen} 
+            onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} 
+            mapStyle={mapStyle} 
+            onHelp={() => setShowOnboarding(true)} 
+            onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
+            showHeatmap={showHeatmap}
+          />
+
+          <Footer />
+
+          {/* Floating Bottom CTA */}
+          <div className="fixed bottom-6 left-0 right-0 z-[2000] pointer-events-none w-full flex justify-center px-4">
+            <div className="flex flex-col items-center gap-3 w-full max-w-sm">
+              <div className="glass px-4 py-2 rounded-xl pointer-events-auto shadow-2xl flex items-center gap-3 border border-border1 animate-[fade-in_0.5s_ease] whitespace-nowrap overflow-hidden">
+                 <span className="w-2 h-2 rounded-full bg-green animate-pulse flex-shrink-0" />
+                 <span className="font-syn font-bold text-[10px] md:text-[11px] text-text1 uppercase tracking-widest">{pins.length} LIVE RENTS</span>
+                 <div className="w-[1px] h-3 bg-border2" />
+                 <button onClick={() => setShowLocationSearch(true)} className="text-accent font-syn font-extrabold text-[10px] md:text-[11px] uppercase truncate">Pin Your Rent 📍</button>
+              </div>
+
+              <button onClick={() => setShowFlatHunt(true)} className="glass w-full md:w-auto px-4 md:px-6 py-3 md:py-4 rounded-2xl flex items-center gap-3 md:gap-4 group pointer-events-auto shadow-2xl border border-border2 hover:border-accent transition-all active:scale-95">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-accent flex items-center justify-center text-on-accent text-lg md:text-xl flex-shrink-0">🏠</div>
+                <div className="flex flex-col items-start text-left">
+                  <span className="text-text1 font-syn font-extrabold text-[10px] md:text-xs uppercase tracking-widest">Find Flat or Tenants</span>
+                  <span className="text-text3 font-dm text-[9px] md:text-[11px]">Join the neighborhood matchmaker</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {showStatsPanel && <StatsPanel stats={stats} city={city} onClose={() => setShowStatsPanel(false)} />}
       {showPinModal && draftPinLatLng && <PinModal lat={draftPinLatLng.lat} lng={draftPinLatLng.lng} onClose={() => setShowPinModal(false)} onSubmit={handlePinSubmit} />}
