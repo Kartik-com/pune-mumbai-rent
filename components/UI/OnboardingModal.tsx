@@ -83,7 +83,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
 
             <div className="w-full space-y-3">
               <button 
-                onClick={handleStart}
+                onClick={() => setView('steps')}
                 className="w-full bg-accent text-bg py-4 rounded-2xl font-syn font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 Let&apos;s start, I&apos;ll keep it honest

@@ -98,7 +98,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   const [categoryMode, setCategoryMode] = useState<'residential' | 'commercial'>('residential');
   const [showPinModal, setShowPinModal] = useState(false);
   const [draftPinLatLng, setDraftPinLatLng] = useState<{ lat: number; lng: number } | null>(null);
-  const [showFilterSidebar, setShowFilterSidebar] = useState(true);
+  const [showFilterSidebar, setShowFilterSidebar] = useState(false);
   const [showStatsPanel, setShowStatsPanel] = useState(false);
   const [showFlatHunt, setShowFlatHunt] = useState(false);
   const [showMetro, setShowMetro] = useState(true);
