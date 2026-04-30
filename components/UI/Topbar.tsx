@@ -15,6 +15,8 @@ export default function Topbar({
   onSelectLocation?: (lat: number, lng: number) => void;
   stats?: { total: number; addedThisWeek: number };
 }) {
+  const [showMobileSearch, setShowMobileSearch] = React.useState(false);
+
   return (
     <header className="fixed top-5 left-0 right-0 z-[2000] px-5 flex items-start justify-between pointer-events-none">
       {/* Left: Brand */}
@@ -27,8 +29,16 @@ export default function Topbar({
         </span>
       </Link>
 
-      {/* Mobile Center: Filter Toggle only */}
+      {/* Mobile Center: Search/Filter Toggle */}
       <div className="md:hidden flex items-center gap-2 pointer-events-auto">
+        <button 
+          onClick={() => setShowMobileSearch(!showMobileSearch)}
+          className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all shadow-2xl border ${
+            showMobileSearch ? 'bg-accent text-on-accent border-accent' : 'glass border-border1 text-text1'
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </button>
         {onToggleFilter && (
             <button 
               onClick={onToggleFilter}
@@ -40,6 +50,13 @@ export default function Topbar({
             </button>
           )}
       </div>
+
+      {/* Mobile Search Overlay */}
+      {showMobileSearch && (
+        <div className="md:hidden fixed top-[75px] left-5 right-5 z-[2100] pointer-events-auto animate-[popup-enter_0.2s_ease]">
+          {onSelectLocation && <TopbarSearch city={city} onSelectLocation={(lat, lng) => { onSelectLocation(lat, lng); setShowMobileSearch(false); }} />}
+        </div>
+      )}
 
       {/* Desktop Center: Search + Filter */}
       <div className="hidden md:flex flex-col items-center gap-2 pointer-events-auto">

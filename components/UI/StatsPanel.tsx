@@ -18,7 +18,7 @@ export default function StatsPanel({
 
   return (
     <div
-      className="fixed top-[52px] right-0 bottom-0 w-[240px] z-[2000] glass border-l border-border1 flex flex-col"
+      className="fixed md:top-[84px] top-0 right-0 bottom-0 md:w-[260px] w-full z-[3500] glass md:border-l border-border1 flex flex-col"
       style={{ transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
     >
       <div className="p-4 border-b border-border1 flex justify-between items-center">

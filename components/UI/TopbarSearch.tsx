@@ -58,7 +58,7 @@ export default function TopbarSearch({
   };
 
   return (
-    <div ref={wrapperRef} className="relative z-[3000] w-[300px]">
+    <div ref={wrapperRef} className="relative z-[3000] w-full md:w-[300px]">
       <div className="glass h-11 px-4 rounded-xl flex items-center shadow-2xl relative w-full">
         <svg className="w-4 h-4 text-text3 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         <input 
