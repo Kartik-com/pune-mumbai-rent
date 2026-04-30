@@ -811,17 +811,6 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       });
       map.addLayer({
         id: 'satellite-layer',
-    // Green Cover
-    if (map.getLayer('satellite-layer')) {
-      map.setLayoutProperty('satellite-layer', 'visibility', showGreen ? 'visible' : 'none');
-    } else if (showGreen) {
-      map.addSource('google-satellite', {
-        type: 'raster',
-        tiles: ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&scale=2'],
-        tileSize: 256
-      });
-      map.addLayer({
-        id: 'satellite-layer',
         type: 'raster',
         source: 'google-satellite',
         layout: { 'visibility': 'visible' }
