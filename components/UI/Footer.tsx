@@ -10,7 +10,7 @@ export default function Footer() {
         Terms of Service
       </Link>
       <span className="text-[10px] font-syn font-bold text-text3/50 uppercase tracking-widest">
-        © 2024 Pune Rent Map
+        © 2026 Pune Rent Map
       </span>
     </footer>
   );
