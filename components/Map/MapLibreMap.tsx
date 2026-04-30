@@ -381,11 +381,11 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         id: 'area-labels-layer',
         type: 'symbol',
         source: 'area-labels',
-        minzoom: 14,
+        minzoom: 10,
         layout: {
           'text-field': ['get', 'name'],
           'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 12, 16, 22],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 10, 10, 16, 22],
           'text-transform': 'uppercase',
           'text-letter-spacing': 0.15,
         },
@@ -393,7 +393,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           'text-color': '#ffffff',
           'text-halo-color': 'rgba(0,0,0,0.85)',
           'text-halo-width': 2,
-          'text-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0, 12.5, 1],
+          'text-opacity': ['interpolate', ['linear'], ['zoom'], 10.5, 0, 12, 1],
         }
       });
 
