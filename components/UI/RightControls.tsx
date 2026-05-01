@@ -12,6 +12,8 @@ export default function RightControls({
   onHelp,
   onToggleHeatmap,
   showHeatmap,
+  onToggleLandmarks,
+  showLandmarks,
 }: {
   onLocate: () => void;
   onHunt: () => void;
