@@ -11,9 +11,11 @@ interface LocationResult {
 export default function TopbarSearch({
   city,
   onSelectLocation,
+  onToggleFilter
 }: {
   city: string;
   onSelectLocation: (lat: number, lng: number) => void;
+  onToggleFilter?: () => void;
 }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<LocationResult[]>([]);
@@ -73,7 +75,7 @@ export default function TopbarSearch({
           onFocus={() => { if (query) setIsOpen(true); }}
         />
         <div className="w-[1px] h-6 bg-border2 mx-4 opacity-30" />
-        <button className="text-text3 hover:text-accent transition-colors p-1">
+        <button onClick={onToggleFilter} className="text-text3 hover:text-accent transition-colors p-1">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 4.5h18m-18 5h18m-18 5h18m-18 5h18"></path></svg>
         </button>
       </div>

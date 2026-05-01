@@ -1007,6 +1007,28 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           </button>
         </div>
 
+        {/* Posting Types (Filter Section) */}
+        <div className="flex items-center gap-2 pointer-events-auto bg-bg/40 backdrop-blur-xl px-2 py-1.5 rounded-2xl border border-white/5 shadow-2xl animate-[popup-enter_0.5s_ease]">
+          <span className="text-[9px] font-syn font-bold text-text3 uppercase tracking-widest ml-2 mr-1">Filter Type:</span>
+          {[
+            { id: 'all', label: 'All', active: !filters.flatmateWanted },
+            { id: 'flats', label: 'Whole Flat', active: !filters.flatmateWanted },
+            { id: 'flatmates', label: 'Flatmates', active: filters.flatmateWanted },
+          ].map((chip) => (
+            <button
+              key={chip.id}
+              onClick={() => setFilters(prev => ({ ...prev, flatmateWanted: chip.id === 'flatmates' }))}
+              className={`px-4 py-1.5 rounded-xl font-syn font-bold text-[10px] uppercase tracking-wider transition-all ${
+                chip.active 
+                  ? 'bg-accent text-bg shadow-lg' 
+                  : 'text-text3 hover:text-text1 hover:bg-white/5'
+              }`}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+
         {/* Search Bar */}
         <div className="w-full pointer-events-auto">
           <TopbarSearch 
@@ -1014,6 +1036,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
             onSelectLocation={(lat, lng) => {
               mapRef.current?.flyTo({ center: [lng, lat], zoom: 16 });
             }} 
+            onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)}
           />
         </div>
       </div>
