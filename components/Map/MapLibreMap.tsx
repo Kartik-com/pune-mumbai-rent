@@ -225,7 +225,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: mapStyle === 'dark' 
-        ? 'https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+        ? 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json'
         : 'https://tiles.basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
       center: [centerLng, centerLat],
       zoom: zoom || 12,
@@ -522,42 +522,42 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         paint: { 'line-color': '#e8c547', 'line-width': 2 }
       });
 
-      // ── ENHANCE DATA DENSITY & READABILITY ──
+      // ── ENHANCE DATA DENSITY & OVERLAP (Google Maps Feel) ──
       const style = map.getStyle();
       if (style && style.layers) {
         style.layers.forEach(layer => {
-          // 1. Force visibility for all POIs and detailed layers
-          if (layer.id.includes('poi') || layer.id.includes('label') || layer.id.includes('road') || layer.id.includes('transit') || layer.id.includes('park')) {
-            try { map.setLayoutProperty(layer.id, 'visibility', 'visible'); } catch {}
-          }
+          // Force all layers to be visible
+          try { map.setLayoutProperty(layer.id, 'visibility', 'visible'); } catch {}
 
-          // 2. High-Contrast Text & Icons
           if (layer.type === 'symbol') {
             try {
-              // Increase font size and ensure absolute white text
-              map.setPaintProperty(layer.id, 'text-color', '#ffffff');
-              map.setPaintProperty(layer.id, 'text-halo-color', 'rgba(0,0,0,0.9)');
-              map.setPaintProperty(layer.id, 'text-halo-width', 2);
+              // Ensure labels show even if they overlap (Density boost)
+              map.setLayoutProperty(layer.id, 'text-allow-overlap', true);
+              map.setLayoutProperty(layer.id, 'icon-allow-overlap', true);
               
+              // High contrast labels
+              map.setPaintProperty(layer.id, 'text-color', '#ffffff');
+              map.setPaintProperty(layer.id, 'text-halo-color', 'rgba(0,0,0,1)');
+              map.setPaintProperty(layer.id, 'text-halo-width', 2.5);
+              
+              // Scale up fonts slightly
               const currentSize = map.getLayoutProperty(layer.id, 'text-size');
               if (typeof currentSize === 'number') {
-                map.setLayoutProperty(layer.id, 'text-size', currentSize * 1.1);
-              }
-
-              // Make icons brighter
-              if (map.getPaintProperty(layer.id, 'icon-opacity')) {
-                map.setPaintProperty(layer.id, 'icon-opacity', 1);
+                map.setLayoutProperty(layer.id, 'text-size', currentSize * 1.2);
               }
             } catch {}
           }
 
-          // 3. Road Visibility
-          if (layer.id.includes('road') || layer.id.includes('street')) {
+          // Brighten Roads & Buildings
+          if (layer.id.includes('road') || layer.id.includes('building') || layer.id.includes('structure') || layer.id.includes('transit')) {
             try {
-              map.setPaintProperty(layer.id, 'line-opacity', 0.8);
-              // Lighten the road color slightly to make them visible against deep black
               if (layer.type === 'line') {
-                map.setPaintProperty(layer.id, 'line-color', '#333333');
+                map.setPaintProperty(layer.id, 'line-opacity', 0.9);
+                map.setPaintProperty(layer.id, 'line-color', '#444444');
+              }
+              if (layer.type === 'fill') {
+                map.setPaintProperty(layer.id, 'fill-opacity', 0.5);
+                map.setPaintProperty(layer.id, 'fill-color', '#2a2a2a');
               }
             } catch {}
           }
