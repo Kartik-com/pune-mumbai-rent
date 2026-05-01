@@ -176,6 +176,19 @@ export default function FilterPanel({
         </>
       )}
 
+      {/* Shortlist Toggle */}
+      <button
+        onClick={() => setFilters(f => ({ ...f, showShortlisted: !f.showShortlisted }))}
+        className={`w-full py-3 rounded-2xl text-xs font-syn font-bold uppercase tracking-widest border transition-all flex items-center justify-center gap-2 ${
+          filters.showShortlisted
+            ? 'bg-pink text-white border-pink shadow-[0_0_15px_rgba(255,107,157,0.3)]'
+            : 'bg-transparent text-text2 border-border2 hover:text-text1 hover:border-text1'
+        } shadow-sm`}
+      >
+        <span>{filters.showShortlisted ? '❤️' : '🤍'}</span>
+        Show Shortlisted Only
+      </button>
+
       {/* Divider */}
       <div className="border-t border-border1" />
 
@@ -186,7 +199,7 @@ export default function FilterPanel({
 
       {/* Reset */}
       <button
-        onClick={() => setFilters({ bhk: [], minRent: 5000, maxRent: 200000, furnished: 'both', gated: 'both', minRating: 0, flatmateWanted: false, neighborhood: '', commercialType: 'both', minArea: 0 })}
+        onClick={() => setFilters({ bhk: [], minRent: 5000, maxRent: 200000, furnished: 'both', gated: 'both', minRating: 0, flatmateWanted: false, neighborhood: '', commercialType: 'both', minArea: 0, showShortlisted: false })}
         className="w-full py-2.5 text-xs uppercase tracking-widest font-syn font-bold text-text3 hover:text-text1 hover:bg-surface2 rounded-xl transition-all border border-transparent hover:border-border1 mt-4"
       >
         ↺ Reset All Filters

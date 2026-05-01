@@ -59,6 +59,7 @@ export interface Filters {
   neighborhood: string;
   commercialType?: string;
   minArea?: number;
+  showShortlisted?: boolean;
 }
 
 interface MapProps {
@@ -93,7 +94,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   const [pins, setPins] = useState<RentPin[]>([]);
   const [filters, setFilters] = useState<Filters>({
     bhk: [], minRent: 5000, maxRent: 200000, furnished: 'both', gated: 'both',
-    minRating: 0, flatmateWanted: false, neighborhood: '',
+    minRating: 0, flatmateWanted: false, neighborhood: '', showShortlisted: false,
   });
 
   // UI state
@@ -116,6 +117,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   const [mapReady, setMapReady] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showLandmarks, setShowLandmarks] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   // Area stats
   const [areaSelectMode, setAreaSelectMode] = useState(false);
@@ -151,6 +153,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       }
 
       if (p.rent < filters.minRent || p.rent > filters.maxRent) return false;
+      if (filters.showShortlisted && !favorites.includes(p.id)) return false;
       return true;
     });
   }, [pins, categoryMode, filters]);
@@ -165,7 +168,17 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
     }))
   }), [filteredPins]);
 
-  // ── IP Hash & Load Style ──
+  // ── Shortlist & Haptic Helper ──
+  useEffect(() => {
+    const saved = localStorage.getItem('shortlisted_pins');
+    if (saved) setFavorites(JSON.parse(saved));
+  }, []);
+
+  const triggerVibe = (ms = 10) => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(ms);
+    }
+  };
   useEffect(() => {
     const savedStyle = localStorage.getItem('map-style') as 'dark' | 'light';
     if (savedStyle) setMapStyle(savedStyle);
@@ -533,15 +546,10 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
       // ── CLICK TO PIN ──
       map.on('click', (e) => {
-        // Ignore if clicking a feature
-        const features = map.queryRenderedFeatures(e.point, {
-          layers: ['clusters', 'unclustered-point']
-        });
-        if (features.length > 0 || areaSelectMode) return;
-
-        // Drop draft pin
+        if (areaSelectMode) return;
+        triggerVibe(20);
         setDraftPinLatLng({ lat: e.lngLat.lat, lng: e.lngLat.lng });
-        showToast('Draggable pin dropped. Confirm to continue.');
+        setShowPinModal(false);
       });
     });
 
@@ -567,9 +575,12 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   // ── Helper to create popup HTML ──
   const createPopupHtml = useCallback((pin: RentPin) => {
     const isOwner = pin.ip_hash === userIpHash;
+    const isFav = favorites.includes(pin.id);
+    
     const ratingHtml = pin.ratings && pin.ratings.count > 0
       ? `<div style="display:flex;gap:8px;margin-bottom:10px;font-size:11px;color:var(--text2);">
           <span>📍 Locality: ${pin.ratings.avgLocality?.toFixed(1) ?? '—'}/5</span>
+          <span>🏗 Quality: ${pin.ratings.avgQuality?.toFixed(1) ?? '—'}/5</span>
           <span style="color:var(--text3);">(${pin.ratings.count})</span>
         </div>`
       : '';
@@ -578,12 +589,19 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       <div style="padding:12px 14px;min-width:260px;font-family:var(--font-outfit),sans-serif;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
-            <div style="font-weight:800;font-size:24px;color:var(--text);line-height:1;">${pin.rent.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}</div>
-            <div style="font-size:12px;color:var(--text3);margin-top:4px;">${pin.bhk} BHK · ${pin.furnished || 'Unfurnished'}</div>
+            <div style="font-family:var(--font-outfit),sans-serif;font-weight:800;font-size:28px;color:var(--text);line-height:1;">${pin.rent.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px;">
+              ${pin.category === 'commercial' ? `<span style="text-transform:capitalize;color:var(--purple);font-weight:bold;">${pin.sub_type || 'Commercial'}</span> · ` : ''}
+              ${pin.category === 'commercial' ? (pin.sqft ? `${pin.sqft} sqft` : '') : `${pin.bhk} BHK`}
+              ${pin.category !== 'commercial' ? ` · ${pin.furnished || 'Unfurnished'}` : ''}
+              ${pin.includes_maint ? ' · +Maint' : ''}
+            </div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-            <div style="background:var(--accent);color:#000;font-size:9px;font-weight:800;padding:3px 6px;border-radius:4px;">${pin.gated ? 'GATED' : 'INDEPENDENT'}</div>
-            ${isOwner ? '<div style="background:var(--purple);color:#fff;font-size:8px;font-weight:800;padding:2px 4px;border-radius:3px;">YOUR PIN</div>' : ''}
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div style="background:${pin.category === 'commercial' ? 'var(--purple)' : (pin.gated ? 'var(--pin-gated)' : 'var(--pin-nogated)')};color:#0f0f0f;font-family:var(--font-outfit),sans-serif;font-weight:800;font-size:9px;padding:4px 8px;border-radius:6px;letter-spacing:1px;text-transform:uppercase;">${pin.category === 'commercial' ? 'Commercial' : (pin.gated ? 'Gated' : 'Independent')}</div>
+            <button onclick="window.__toggleFav__('${pin.id}')" style="background:var(--surface2);border:1px solid var(--border1);border-radius:8px;width:32px;height:32px;display:flex;items-center:center;justify-content:center;cursor:pointer;transition:all 0.2s;">
+              <span style="color:${isFav ? '#ff4b4b' : 'var(--text3)'};font-size:16px;">${isFav ? '❤️' : '🤍'}</span>
+            </button>
           </div>
         </div>
         <p style="font-size:14px;color:var(--text2);font-weight:500;margin:0 0 6px;">${pin.society}</p>
@@ -838,7 +856,15 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         w.open(`https://wa.me/91${resData.phone}`, '_blank');
       } catch { showToast('Error.'); }
     };
-  }, [fetchPins, showToast]);
+    w.__toggleFav__ = (id: string) => {
+      setFavorites(prev => {
+        const next = prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id];
+        localStorage.setItem('shortlisted_pins', JSON.stringify(next));
+        return next;
+      });
+      triggerVibe(15);
+    };
+  }, [fetchPins, showToast, favorites]);
 
   // ── Layer Toggles ──
   useEffect(() => {
