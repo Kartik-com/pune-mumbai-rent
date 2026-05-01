@@ -28,7 +28,7 @@ export default function RightControls({
   showHeatmap: boolean;
 }) {
   return (
-    <div className="fixed right-3 md:right-4 md:top-[84px] top-[90px] flex flex-col gap-1.5 md:gap-[10px] z-[1000] pointer-events-auto items-end">
+    <div id="right-controls" className="fixed right-3 md:right-4 md:top-[84px] top-[90px] flex flex-col gap-1.5 md:gap-[10px] z-[1000] pointer-events-auto items-end">
       {/* Style Toggle */}
       <button onClick={onToggleStyle} title="Switch Map Style" className="w-8 h-8 md:w-[42px] md:h-[42px] rounded-[8px] md:rounded-[10px] glass glass-hover flex items-center justify-center text-text2 hover:text-accent shadow-2xl transition-all">
         {mapStyle === 'dark' ? (

@@ -52,22 +52,39 @@ export default function CoachMarks({ onFinish }: { onFinish: () => void }) {
       if (rect.top < 0 || rect.bottom > window.innerHeight) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+      return true;
     }
+    return false;
   }, [stepIndex]);
 
   useEffect(() => {
-    // Small delay to ensure elements are rendered and animations finished
-    const timer = setTimeout(() => {
-      updateSpotlight();
-      setIsVisible(true);
-    }, 500);
+    const checkAndShow = () => {
+      const found = updateSpotlight();
+      if (found) {
+        setIsVisible(true);
+      } else {
+        // If element not found, skip to next or finish
+        if (stepIndex < STEPS.length - 1) {
+          setStepIndex(s => s + 1);
+        } else {
+          onFinish();
+        }
+      }
+    };
 
-    window.addEventListener('resize', updateSpotlight);
+    const delay = stepIndex === 0 ? 800 : 100;
+    const timer = setTimeout(checkAndShow, delay);
+
+    window.addEventListener('resize', () => {
+      const el = document.querySelector(STEPS[stepIndex].selector);
+      if (el) setTargetRect(el.getBoundingClientRect());
+    });
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', updateSpotlight);
     };
-  }, [updateSpotlight]);
+  }, [updateSpotlight, stepIndex, onFinish]);
 
   const handleNext = () => {
     if (stepIndex < STEPS.length - 1) {
@@ -96,16 +113,20 @@ export default function CoachMarks({ onFinish }: { onFinish: () => void }) {
   // Tooltip positioning
   const getTooltipStyle = () => {
     const gap = 15;
+    let left = targetRect.left + (targetRect.width / 2) - 150;
+    // Clamp to screen
+    left = Math.max(10, Math.min(left, window.innerWidth - 310));
+
     if (step.position === 'bottom') {
-      return { top: targetRect.bottom + gap, left: targetRect.left + (targetRect.width / 2) - 150 };
+      return { top: Math.min(targetRect.bottom + gap, window.innerHeight - 250), left };
     }
     if (step.position === 'top') {
-      return { top: targetRect.top - 200 - gap, left: targetRect.left + (targetRect.width / 2) - 150 };
+      return { top: Math.max(targetRect.top - 200 - gap, 80), left };
     }
     if (step.position === 'left') {
-      return { top: targetRect.top + (targetRect.height / 2) - 100, left: targetRect.left - 320 - gap };
+      return { top: targetRect.top + (targetRect.height / 2) - 100, left: Math.max(10, targetRect.left - 320 - gap) };
     }
-    return { top: targetRect.top, left: targetRect.right + gap };
+    return { top: targetRect.top, left: Math.min(targetRect.right + gap, window.innerWidth - 310) };
   };
 
   return (
