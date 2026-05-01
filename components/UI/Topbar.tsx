@@ -59,65 +59,41 @@ export default function Topbar({
         </div>
       )}
 
-      {/* Desktop Center: Search + Filter */}
-      <div className="hidden md:flex flex-col items-center gap-2 pointer-events-auto">
-        <div className="flex items-center gap-2">
-          {onSelectLocation ? (
-            <TopbarSearch city={city} onSelectLocation={onSelectLocation} />
-          ) : (
-            <div className="glass h-11 px-4 rounded-xl flex items-center shadow-2xl relative w-[300px]">
-              <svg className="w-4 h-4 text-text3 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-              <input 
-                type="text" 
-                placeholder="Search neighbourhood or area..." 
-                className="bg-transparent border-none outline-none text-sm text-text1 w-full placeholder:text-text3 font-dm"
-              />
-            </div>
-          )}
-          {onToggleFilter && (
-            <button 
-              onClick={onToggleFilter}
-              className={`h-11 px-4 rounded-xl font-syn font-bold text-xs uppercase tracking-wider transition-colors shadow-2xl border ${
-                showFilters ? 'bg-accent text-on-accent border-accent' : 'glass border-border1 text-text1 hover:text-accent'
-              }`}
-            >
-              Filters
-            </button>
-          )}
-        </div>
-        
-        {/* Live Status Bar */}
-        {stats && stats.total > 0 && (
-          <div className="flex items-center gap-3 px-3 py-1 bg-surface1/20 rounded-full border border-border1/30 animate-[fade-in_0.5s_ease]">
-            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-syn font-bold text-text3">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-              📍 {stats.total.toLocaleString()} Pins
-            </span>
-            <div className="w-[1px] h-3 bg-border2 opacity-30"></div>
-            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-syn font-bold text-text3">
-              <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse"></span>
-              ⚡ {stats.addedThisWeek} New This Week
-            </span>
-          </div>
-        )}
+      {/* Desktop Center: Links (Optional, matching screenshot style) */}
+      <div className="hidden md:flex items-center gap-6 pointer-events-auto">
+        <button className="text-text3 hover:text-text1 font-syn font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center gap-2">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          How to Use
+        </button>
+        <button className="text-text3 hover:text-text1 font-syn font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center gap-2">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          Report Issue
+        </button>
       </div>
 
-      {/* Right: City nav */}
-      <nav className="flex items-center gap-3 pointer-events-auto glass px-2 py-1.5 rounded-xl shadow-2xl">
-        {['pune', 'mumbai'].map((c) => (
-          <Link
-            key={c}
-            href={`/${c}`}
-            className={`font-syn text-[10px] uppercase tracking-[0.15em] font-bold px-3 py-1.5 rounded-lg transition-all ${
-              city === c
-                ? 'bg-surface2 text-accent'
-                : 'text-text3 hover:text-text2 hover:bg-surface1'
-            }`}
-          >
-            {c}
-          </Link>
-        ))}
-      </nav>
+      {/* Right: City nav & Login */}
+      <div className="flex items-center gap-4 pointer-events-auto">
+        <nav className="flex items-center glass px-1.5 py-1.5 rounded-xl shadow-2xl">
+          {['pune', 'mumbai'].map((c) => (
+            <Link
+              key={c}
+              href={`/${c}`}
+              className={`font-syn text-[10px] uppercase tracking-[0.15em] font-bold px-4 py-2 rounded-lg transition-all ${
+                city === c
+                  ? 'bg-surface2 text-accent shadow-lg'
+                  : 'text-text3 hover:text-text2 hover:bg-surface1'
+              }`}
+            >
+              {c}
+            </Link>
+          ))}
+        </nav>
+        
+        <button className="glass px-5 py-2.5 rounded-xl font-syn font-bold text-[10px] uppercase tracking-widest text-text1 hover:bg-accent hover:text-bg transition-all shadow-2xl border border-border1 flex items-center gap-2">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+          Log in
+        </button>
+      </div>
 
       {/* Mobile search - absolute bottom of screen logic is usually handled elsewhere, but we can do a floating bar here too if needed */}
     </header>

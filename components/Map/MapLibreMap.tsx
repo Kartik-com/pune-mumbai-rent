@@ -14,6 +14,8 @@ import OnboardingModal from '../UI/OnboardingModal';
 import CoachMarks from '../UI/CoachMarks';
 import LocationSearchModal from '../UI/LocationSearchModal';
 import MapLoader from '../UI/MapLoader';
+import TopbarSearch from '../UI/TopbarSearch';
+import Legend from '../UI/Legend';
 import MarketTicker from '../UI/MarketTicker';
 import Footer from '../UI/Footer';
 import { getMetroLines } from '../../lib/metroData';
@@ -470,7 +472,16 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           'visibility': 'none'
         },
         paint: {
-          'text-color': '#ff6b9d',
+          'text-color': [
+            'match',
+            ['get', 'type'],
+            'history', '#ff6b9d',
+            'medical', '#3b82f6',
+            'food', '#f97316',
+            'nature', '#10b981',
+            'shopping', '#e8c547',
+            '#ff6b9d'
+          ],
           'text-halo-color': 'rgba(0,0,0,0.85)',
           'text-halo-width': 2,
         }
@@ -484,7 +495,16 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         layout: { 'visibility': 'none' },
         paint: {
           'circle-radius': 4,
-          'circle-color': '#ff6b9d',
+          'circle-color': [
+            'match',
+            ['get', 'type'],
+            'history', '#ff6b9d',
+            'medical', '#3b82f6',
+            'food', '#f97316',
+            'nature', '#10b981',
+            'shopping', '#e8c547',
+            '#ff6b9d'
+          ],
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff'
         }
@@ -638,18 +658,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         const pin = f.properties as RentPin;
         const coords = (f.geometry as { type: 'Point'; coordinates: [number, number] }).coordinates;
         
-        const el = document.createElement('div');
-        el.className = 'custom-pill-marker';
-        const isComm = pin.category === 'commercial';
-        const color = isComm ? 'var(--purple)' : (pin.gated ? 'var(--pin-gated)' : 'var(--pin-nogated)');
-        const price = fmtRent(pin.rent).replace('₹', '');
-        const typeLabel = isComm ? (pin.sub_type ? pin.sub_type.charAt(0).toUpperCase() : 'C') : `${pin.bhk}BHK`;
-        
-        el.innerHTML = `<div style="position:relative;display:flex;align-items:center;background:${color};color:#fff;padding:4px 10px;border-radius:8px;font-family:var(--font-outfit),sans-serif;font-weight:800;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,0.45);border:1.5px solid rgba(255,255,255,0.15);white-space:nowrap;transition:all 0.2s ease;pointer-events:auto;cursor:pointer;">
-          <span style="opacity:0.85;margin-right:5px;font-size:10px;">${typeLabel}</span>
-          <span>${price}</span>
-          <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid ${color};"></div>
-        </div>`;
+        const el = createMarkerEl(pin);
 
         el.onclick = (e) => {
           e.stopPropagation();
@@ -919,13 +928,43 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         <div id="map-area" ref={mapContainerRef} className="w-full h-full" />
       </div>
       <MapLoader isReady={mapReady} />
+      <Legend />
+
+      {/* Floating Bottom UI: Search & Action Buttons */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[2500] flex flex-col items-center gap-5 w-[90%] max-w-[600px] pointer-events-none">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-4 pointer-events-auto animate-[popup-enter_0.4s_ease]">
+          <button 
+            onClick={() => setShowLocationSearch(true)}
+            className="bg-green hover:bg-green/90 text-bg font-syn font-black text-[11px] uppercase tracking-wider px-8 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all active:scale-95"
+          >
+            <span className="text-lg">📍</span> Pin Rent
+          </button>
+          <button 
+            onClick={() => setShowFlatHunt(true)}
+            className="bg-accent hover:bg-accent/90 text-on-accent font-syn font-black text-[11px] uppercase tracking-wider px-8 py-3.5 rounded-2xl flex items-center gap-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all active:scale-95"
+          >
+            <span className="text-lg">🏠</span> Post Listing
+          </button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="w-full pointer-events-auto">
+          <TopbarSearch 
+            city={city} 
+            onSelectLocation={(lat, lng) => {
+              mapRef.current?.flyTo({ center: [lng, lat], zoom: 16 });
+            }} 
+          />
+        </div>
+      </div>
 
       {mapReady && (
         <>
           <MarketTicker pins={pins} />
 
           <div className="mt-7">
-            <Topbar city={city} stats={stats || undefined} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} onSelectLocation={(l1, l2) => mapRef.current?.flyTo({ center: [l2, l1], zoom: 16 })} />
+            <Topbar city={city} stats={stats || undefined} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} />
           </div>
 
           {/* Category Toggle */}
@@ -962,25 +1001,6 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           />
 
           <Footer />
-
-          {/* Floating Bottom CTA */}
-          <div className="fixed bottom-6 left-0 right-0 z-[2000] pointer-events-none w-full flex justify-center px-4">
-            <div className="flex flex-col items-center gap-3 w-full max-w-sm">
-                  <div id="pin-cta-container" className="glass px-4 py-2 rounded-xl pointer-events-auto shadow-2xl flex items-center gap-3 border border-border1 animate-[fade-in_0.5s_ease] whitespace-nowrap overflow-hidden">
-                 <span className="w-2 h-2 rounded-full bg-green animate-pulse flex-shrink-0" />
-                 <span className="font-syn font-bold text-[10px] md:text-[11px] text-text1 uppercase tracking-widest">{pins.length} LIVE RENTS</span>
-                 <div className="w-[1px] h-3 bg-border2" />
-                 <button onClick={() => setShowLocationSearch(true)} className="text-accent font-syn font-extrabold text-[10px] md:text-[11px] uppercase truncate">Pin Your Rent 📍</button>
-              </div>
-
-              <button onClick={() => setShowFlatHunt(true)} className="glass w-full md:w-auto px-4 md:px-6 py-3 md:py-4 rounded-2xl flex items-center gap-3 md:gap-4 group pointer-events-auto shadow-2xl border border-border2 hover:border-accent transition-all active:scale-95">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-accent flex items-center justify-center text-on-accent text-lg md:text-xl flex-shrink-0">🏠</div>
-                <div className="flex flex-col items-start text-left">
-                  <span className="text-text1 font-syn font-extrabold text-[10px] md:text-xs uppercase tracking-widest">Find Flat or Tenants</span>
-                  <span className="text-text3 font-dm text-[9px] md:text-[11px]">Join the neighborhood matchmaker</span>
-                </div>
-              </button>
-            </div>
           </div>
         </>
       )}
