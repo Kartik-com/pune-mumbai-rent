@@ -901,20 +901,20 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       {showOnboarding && <OnboardingModal onClose={() => { setShowOnboarding(false); setShowTour(true); }} />}
       {showTour && <CoachMarks onFinish={() => setShowTour(false)} />}
       
-      {/* Draft Pin Confirm Button */}
+      {/* Draft Pin Confirm Buttons */}
       {draftPinLatLng && !showPinModal && (
-        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[2500] animate-[popup-enter_0.3s_ease] flex flex-col gap-2 w-full max-w-[280px] px-4">
+        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[2500] animate-[popup-enter_0.3s_ease] flex items-center gap-2 whitespace-nowrap">
           <button 
             onClick={() => setShowPinModal(true)}
-            className="w-full glass bg-accent text-bg py-4 rounded-2xl font-syn font-black uppercase tracking-[0.2em] shadow-[0_20px_40px_rgba(232,197,71,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all border-none"
+            className="glass bg-accent text-bg px-6 py-3 rounded-2xl font-syn font-black uppercase tracking-widest text-[11px] shadow-[0_20px_40px_rgba(232,197,71,0.3)] hover:scale-105 active:scale-95 transition-all border-none"
           >
-            Confirm Location 📍
+            Confirm 📍
           </button>
           <button 
             onClick={() => setDraftPinLatLng(null)}
-            className="w-full py-2 font-syn font-bold text-[10px] text-text3 uppercase tracking-widest hover:text-text1 transition-all"
+            className="glass bg-surface2/80 text-text1 px-6 py-3 rounded-2xl font-syn font-bold uppercase tracking-widest text-[11px] hover:bg-surface3 transition-all border border-border1"
           >
-            Cancel pinning
+            Cancel
           </button>
         </div>
       )}
