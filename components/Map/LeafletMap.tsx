@@ -142,6 +142,7 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
   const [showMetro, setShowMetro] = useState(true);
   const [showGreen, setShowGreen] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showLandmarks, setShowLandmarks] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [userIpHash, setUserIpHash] = useState<string>('');
@@ -660,6 +661,8 @@ export default function LeafletMap({ city, centerLat, centerLng, zoom }: Leaflet
         showGreen={showGreen} 
         onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
         showHeatmap={showHeatmap}
+        onToggleLandmarks={() => setShowLandmarks(!showLandmarks)}
+        showLandmarks={showLandmarks}
         onToggleStyle={() => setMapStyle(p => p === 'dark' ? 'light' : 'dark')} 
         mapStyle={mapStyle} 
         onHelp={() => setShowOnboarding(true)} 
