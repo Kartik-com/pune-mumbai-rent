@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const STEPS = [
@@ -41,6 +41,19 @@ const STEPS = [
 export default function OnboardingModal({ onClose }: { onClose: () => void }) {
   const [view, setView] = useState<'welcome' | 'steps'>('welcome');
   const [step, setStep] = useState(0);
+  const [liveStats, setLiveStats] = useState({ available: 116, seekers: 1495, total: 3814 });
+
+  useEffect(() => {
+    fetch('/api/stats').then(r => r.json()).then(data => {
+      if (data.available || data.seekers || data.total) {
+        setLiveStats({
+          available: data.available || 116,
+          seekers: data.seekers || 1495,
+          total: data.total || 3814
+        });
+      }
+    }).catch(() => {});
+  }, []);
 
   const handleStart = () => {
     localStorage.setItem('seenOnboarding', 'true');
@@ -55,7 +68,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[4000] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
       <div 
-        className="glass w-full max-w-sm max-h-[92vh] overflow-y-auto rounded-[32px] p-6 sm:p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-border1 relative animate-[popup-enter_0.4s_cubic-bezier(0.16,1,0.3,1)] scrollbar-hide"
+        className="glass w-full max-w-[360px] max-h-[92vh] overflow-y-auto rounded-[32px] p-6 sm:p-7 shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-border1 relative animate-[popup-enter_0.4s_cubic-bezier(0.16,1,0.3,1)] scrollbar-hide"
         onClick={e => e.stopPropagation()}
       >
         {view === 'welcome' ? (
@@ -71,23 +84,23 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
             </h2>
 
             {/* Stats Grid */}
-            <div className="w-full space-y-3 mb-6 sm:mb-8">
+            <div className="w-full space-y-2 mb-6">
               {[
-                { emoji: '🏠', count: '116', label: 'flats listed for rent' },
-                { emoji: '👤', count: '1,495', label: 'people looking for a flat' },
-                { emoji: '📍', count: '3,814', label: 'rents pinned anonymously' },
+                { emoji: '🏠', count: liveStats.available.toLocaleString(), label: 'flats listed for rent' },
+                { emoji: '👤', count: liveStats.seekers.toLocaleString(), label: 'people looking for a flat' },
+                { emoji: '📍', count: liveStats.total.toLocaleString(), label: 'rents pinned anonymously' },
               ].map((s, i) => (
-                <div key={i} className="flex items-center gap-3 sm:gap-4 bg-surface2/50 p-3.5 sm:p-4 rounded-2xl border border-border1/50">
-                  <span className="text-2xl">{s.emoji}</span>
+                <div key={i} className="flex items-center gap-3 bg-surface2/40 p-3 rounded-2xl border border-border1/30">
+                  <span className="text-xl">{s.emoji}</span>
                   <div className="flex flex-col items-start">
-                    <span className="text-lg font-syn font-black text-text1 leading-none">{s.count}</span>
-                    <span className="text-[10px] font-dm text-text3 uppercase font-bold tracking-wider">{s.label}</span>
+                    <span className="text-base font-syn font-black text-text1 leading-tight">{s.count}</span>
+                    <span className="text-[9px] font-dm text-text3 uppercase font-bold tracking-wider">{s.label}</span>
                   </div>
                 </div>
               ))}
             </div>
 
-            <p className="text-xs text-text2 leading-relaxed mb-8 sm:mb-10 px-2 font-dm">
+            <p className="text-[11px] text-text2 leading-relaxed mb-8 px-4 font-dm">
               Real data from real neighbours. If something looks off — report it. You&apos;re the <span className="text-text1 font-bold">fact-checker</span> for your neighbourhood.
             </p>
 
@@ -112,7 +125,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
               </button>
             </div>
 
-            <p className="mt-6 sm:mt-8 text-[9px] text-text3 font-dm px-4">
+            <p className="mt-6 text-[8px] text-text3 font-dm px-4">
               By moving forward to the map, you agree to our <Link href="/privacy" className="underline">Privacy Policy</Link> and <Link href="/terms" className="underline">Terms of Use</Link>
             </p>
           </div>
