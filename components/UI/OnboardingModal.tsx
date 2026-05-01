@@ -55,29 +55,29 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[4000] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
       <div 
-        className="glass w-full max-w-sm rounded-[32px] p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-border1 relative animate-[popup-enter_0.4s_cubic-bezier(0.16,1,0.3,1)]"
+        className="glass w-full max-w-sm max-h-[92vh] overflow-y-auto rounded-[32px] p-6 sm:p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-border1 relative animate-[popup-enter_0.4s_cubic-bezier(0.16,1,0.3,1)] scrollbar-hide"
         onClick={e => e.stopPropagation()}
       >
         {view === 'welcome' ? (
           <div className="flex flex-col items-center text-center">
             {/* Trust Badge */}
-            <div className="bg-accent/10 text-accent px-4 py-1.5 rounded-full text-[10px] font-syn font-bold uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+            <div className="bg-accent/10 text-accent px-4 py-1.5 rounded-full text-[10px] font-syn font-bold uppercase tracking-[0.2em] mb-5 sm:mb-6 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               🛡️ WHAT&apos;S LIVE RIGHT NOW
             </div>
 
-            <h2 className="text-3xl font-syn font-black text-text1 uppercase tracking-tighter leading-none mb-8">
+            <h2 className="text-2xl sm:text-3xl font-syn font-black text-text1 uppercase tracking-tighter leading-none mb-6 sm:mb-8">
               We build trust <br/><span className="text-accent">together</span>
             </h2>
 
             {/* Stats Grid */}
-            <div className="w-full space-y-3 mb-8">
+            <div className="w-full space-y-3 mb-6 sm:mb-8">
               {[
                 { emoji: '🏠', count: '116', label: 'flats listed for rent' },
                 { emoji: '👤', count: '1,495', label: 'people looking for a flat' },
                 { emoji: '📍', count: '3,814', label: 'rents pinned anonymously' },
               ].map((s, i) => (
-                <div key={i} className="flex items-center gap-4 bg-surface2/50 p-4 rounded-2xl border border-border1/50">
+                <div key={i} className="flex items-center gap-3 sm:gap-4 bg-surface2/50 p-3.5 sm:p-4 rounded-2xl border border-border1/50">
                   <span className="text-2xl">{s.emoji}</span>
                   <div className="flex flex-col items-start">
                     <span className="text-lg font-syn font-black text-text1 leading-none">{s.count}</span>
@@ -87,21 +87,21 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
               ))}
             </div>
 
-            <p className="text-xs text-text2 leading-relaxed mb-10 px-2 font-dm">
+            <p className="text-xs text-text2 leading-relaxed mb-8 sm:mb-10 px-2 font-dm">
               Real data from real neighbours. If something looks off — report it. You&apos;re the <span className="text-text1 font-bold">fact-checker</span> for your neighbourhood.
             </p>
 
             <div className="w-full space-y-3">
               <button 
                 onClick={() => setView('steps')}
-                className="w-full bg-accent text-bg py-4 rounded-2xl font-syn font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full bg-accent text-bg py-3.5 sm:py-4 rounded-2xl font-syn font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 Let&apos;s start, I&apos;ll keep it honest
               </button>
               
               <button 
                 onClick={() => setView('steps')}
-                className="w-full py-4 rounded-2xl font-syn font-bold uppercase tracking-widest text-[10px] text-text3 hover:text-text1 transition-all"
+                className="w-full py-3.5 sm:py-4 rounded-2xl font-syn font-bold uppercase tracking-widest text-[10px] text-text3 hover:text-text1 transition-all"
               >
                 Learn how to use
               </button>
@@ -112,7 +112,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
               </button>
             </div>
 
-            <p className="mt-8 text-[9px] text-text3 font-dm px-4">
+            <p className="mt-6 sm:mt-8 text-[9px] text-text3 font-dm px-4">
               By moving forward to the map, you agree to our <Link href="/privacy" className="underline">Privacy Policy</Link> and <Link href="/terms" className="underline">Terms of Use</Link>
             </p>
           </div>
@@ -127,15 +127,15 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
             </div>
 
             <div className="flex flex-col items-center text-center mt-4">
-              <div className="text-5xl mb-8 animate-[bounce_2s_infinite]">
+              <div className="text-4xl sm:text-5xl mb-6 sm:mb-8 animate-[bounce_2s_infinite]">
                 {STEPS[step].emoji}
               </div>
 
-              <h2 className="font-syn font-bold text-2xl text-text1 mb-4 leading-tight tracking-tight">
+              <h2 className="font-syn font-bold text-xl sm:text-2xl text-text1 mb-3 sm:mb-4 leading-tight tracking-tight">
                 {STEPS[step].title}
               </h2>
               
-              <div className="text-[15px] text-text2 font-dm leading-relaxed mb-12 min-h-[100px] flex items-center justify-center">
+              <div className="text-[14px] sm:text-[15px] text-text2 font-dm leading-relaxed mb-8 sm:mb-12 min-h-[80px] sm:min-h-[100px] flex items-center justify-center">
                 {STEPS[step].desc}
               </div>
             </div>
@@ -150,7 +150,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
               
               <button 
                 onClick={nextStep}
-                className="flex-1 bg-accent text-bg px-6 py-4 rounded-2xl font-syn font-extrabold text-xs uppercase tracking-widest shadow-xl transition-all"
+                className="flex-1 bg-accent text-bg px-6 py-3.5 sm:py-4 rounded-2xl font-syn font-extrabold text-xs uppercase tracking-widest shadow-xl transition-all"
               >
                 {step === STEPS.length - 1 ? "Start Exploration ✓" : "Next →"}
               </button>
