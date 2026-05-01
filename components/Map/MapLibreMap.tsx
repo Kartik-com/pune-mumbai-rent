@@ -554,7 +554,6 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           // 3. Road Visibility
           if (layer.id.includes('road') || layer.id.includes('street')) {
             try {
-              const currentOpacity = map.getPaintProperty(layer.id, 'line-opacity');
               map.setPaintProperty(layer.id, 'line-opacity', 0.8);
               // Lighten the road color slightly to make them visible against deep black
               if (layer.type === 'line') {
