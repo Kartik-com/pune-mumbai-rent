@@ -1023,7 +1023,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           <MarketTicker pins={pins} />
 
           <div className="mt-7">
-            <Topbar city={city} stats={stats || undefined} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} />
+            <Topbar city={city} onToggleFilter={() => setShowFilterSidebar(!showFilterSidebar)} showFilters={showFilterSidebar} />
           </div>
 
           {/* Category Toggle */}
