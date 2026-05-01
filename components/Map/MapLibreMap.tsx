@@ -903,12 +903,18 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       
       {/* Draft Pin Confirm Button */}
       {draftPinLatLng && !showPinModal && (
-        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[2500] animate-[popup-enter_0.3s_ease]">
+        <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[2500] animate-[popup-enter_0.3s_ease] flex flex-col gap-2 w-full max-w-[280px] px-4">
           <button 
             onClick={() => setShowPinModal(true)}
-            className="glass bg-accent text-bg px-8 py-4 rounded-2xl font-syn font-black uppercase tracking-[0.2em] shadow-[0_20px_40px_rgba(232,197,71,0.3)] hover:scale-105 active:scale-95 transition-all border-none"
+            className="w-full glass bg-accent text-bg py-4 rounded-2xl font-syn font-black uppercase tracking-[0.2em] shadow-[0_20px_40px_rgba(232,197,71,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all border-none"
           >
             Confirm Location 📍
+          </button>
+          <button 
+            onClick={() => setDraftPinLatLng(null)}
+            className="w-full py-2 font-syn font-bold text-[10px] text-text3 uppercase tracking-widest hover:text-text1 transition-all"
+          >
+            Cancel pinning
           </button>
         </div>
       )}
