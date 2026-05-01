@@ -847,6 +847,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       __ratePin__?: (id: string) => void;
       __reportPin__?: (id: string) => void;
       __interestPin__?: (id: string) => void;
+      __toggleFav__?: (id: string) => void;
       confirm: (msg: string) => boolean;
       open: (url: string, target: string) => void;
     };
