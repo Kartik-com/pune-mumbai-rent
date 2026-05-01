@@ -592,6 +592,65 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
     }
   }, [pinsGeoJSON, mapReady]);
 
+  // ── Pin Icon (Cyber Price Pill Style) ──
+  const createMarkerEl = useCallback((pin: RentPin) => {
+    const el = document.createElement('div');
+    el.className = 'custom-pill-marker';
+    
+    // Determine color based on type (matching legend)
+    let color = '#f97316'; // Default Orange (Rent Data)
+    if (pin.available) color = '#3b82f6'; // Blue
+    if (pin.flatmate_wanted) color = '#10b981'; // Green
+
+    const price = pin.rent >= 100000 
+      ? `₹${(pin.rent / 100000).toFixed(1)}L` 
+      : `₹${(pin.rent / 1000).toFixed(0)}K`;
+    
+    const typeLabel = `${pin.bhk}BHK`;
+    
+    el.innerHTML = `
+      <div style="
+        background: ${color};
+        color: #000;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-family: var(--font-syn), sans-serif;
+        font-weight: 900;
+        font-size: 11px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.2);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transform: translate(-50%, -50%);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        letter-spacing: -0.02em;
+      ">
+        <span style="opacity: 0.6; font-size: 9px;">${typeLabel}</span>
+        <span style="color: #000;">${price}</span>
+      </div>
+    `;
+    
+    el.addEventListener('mouseenter', () => {
+      const inner = el.querySelector('div');
+      if (inner) {
+        inner.style.transform = 'translate(-50%, -55%) scale(1.1)';
+        inner.style.boxShadow = `0 15px 30px ${color}44`;
+      }
+    });
+    el.addEventListener('mouseleave', () => {
+      const inner = el.querySelector('div');
+      if (inner) {
+        inner.style.transform = 'translate(-50%, -50%) scale(1)';
+        inner.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+      }
+    });
+
+    return el;
+  }, []);
+
   // ── Helper to create popup HTML ──
   const createPopupHtml = useCallback((pin: RentPin) => {
     const isOwner = pin.ip_hash === userIpHash;
@@ -678,7 +737,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
 
     map.on('render', updateMarkers);
     return () => { map.off('render', updateMarkers); };
-  }, [mapReady, pins, createPopupHtml]);
+  }, [mapReady, pins, createPopupHtml, createMarkerEl]);
 
   // ── Update Source ──
   useEffect(() => {
@@ -1001,7 +1060,6 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           />
 
           <Footer />
-          </div>
         </>
       )}
 
