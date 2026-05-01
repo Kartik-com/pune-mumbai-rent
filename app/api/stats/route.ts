@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   ]);
 
   // For BHK stats, we still need city
-  let bhkStats: any[] = [];
+  let bhkStats: { bhk: number; avg_rent: number; count: number }[] = [];
   if (city) {
     const { data: byBhk } = await supabaseAdmin.rpc('get_city_stats', { p_city: city });
     if (byBhk) bhkStats = byBhk;
