@@ -522,18 +522,45 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
         paint: { 'line-color': '#e8c547', 'line-width': 2 }
       });
 
-      // ── BRIGHTEN BASE LABELS ──
+      // ── ENHANCE DATA DENSITY & READABILITY ──
       const style = map.getStyle();
       if (style && style.layers) {
         style.layers.forEach(layer => {
+          // 1. Force visibility for all POIs and detailed layers
+          if (layer.id.includes('poi') || layer.id.includes('label') || layer.id.includes('road') || layer.id.includes('transit') || layer.id.includes('park')) {
+            try { map.setLayoutProperty(layer.id, 'visibility', 'visible'); } catch {}
+          }
+
+          // 2. High-Contrast Text & Icons
           if (layer.type === 'symbol') {
             try {
+              // Increase font size and ensure absolute white text
               map.setPaintProperty(layer.id, 'text-color', '#ffffff');
-              map.setPaintProperty(layer.id, 'text-halo-color', 'rgba(0,0,0,0.8)');
-              map.setPaintProperty(layer.id, 'text-halo-width', 1.5);
-            } catch {
-              // Some layers might not have these properties
-            }
+              map.setPaintProperty(layer.id, 'text-halo-color', 'rgba(0,0,0,0.9)');
+              map.setPaintProperty(layer.id, 'text-halo-width', 2);
+              
+              const currentSize = map.getLayoutProperty(layer.id, 'text-size');
+              if (typeof currentSize === 'number') {
+                map.setLayoutProperty(layer.id, 'text-size', currentSize * 1.1);
+              }
+
+              // Make icons brighter
+              if (map.getPaintProperty(layer.id, 'icon-opacity')) {
+                map.setPaintProperty(layer.id, 'icon-opacity', 1);
+              }
+            } catch {}
+          }
+
+          // 3. Road Visibility
+          if (layer.id.includes('road') || layer.id.includes('street')) {
+            try {
+              const currentOpacity = map.getPaintProperty(layer.id, 'line-opacity');
+              map.setPaintProperty(layer.id, 'line-opacity', 0.8);
+              // Lighten the road color slightly to make them visible against deep black
+              if (layer.type === 'line') {
+                map.setPaintProperty(layer.id, 'line-color', '#333333');
+              }
+            } catch {}
           }
         });
       }
