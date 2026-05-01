@@ -7,14 +7,12 @@ export default function Topbar({
   city, 
   onToggleFilter,
   showFilters,
-  onSelectLocation,
-  stats
+  onSelectLocation
 }: { 
   city: string;
   onToggleFilter?: () => void;
   showFilters?: boolean;
   onSelectLocation?: (lat: number, lng: number) => void;
-  stats?: { total: number; addedThisWeek: number };
 }) {
   const [showMobileSearch, setShowMobileSearch] = React.useState(false);
 
