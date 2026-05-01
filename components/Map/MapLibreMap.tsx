@@ -18,6 +18,7 @@ import MarketTicker from '../UI/MarketTicker';
 import Footer from '../UI/Footer';
 import { getMetroLines } from '../../lib/metroData';
 import { AREA_LABELS } from '../../lib/areaLabels';
+import { LANDMARKS } from '../../lib/landmarks';
 
 // ── Types ──
 export interface RentPin {
@@ -114,6 +115,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
   const [mapStyle, setMapStyle] = useState<'dark' | 'light'>('dark');
   const [mapReady, setMapReady] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showLandmarks, setShowLandmarks] = useState(false);
 
   // Area stats
   const [areaSelectMode, setAreaSelectMode] = useState(false);
@@ -429,6 +431,50 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       map.addSource('selection-rect', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] }
+      });
+
+      // 7. Landmarks Source & Layer
+      const landmarksGeoJSON = {
+        type: 'FeatureCollection' as const,
+        features: LANDMARKS.filter(l => l.city === city).map(l => ({
+          type: 'Feature' as const,
+          geometry: { type: 'Point' as const, coordinates: [l.coords[1], l.coords[0]] },
+          properties: { name: l.name, type: l.type }
+        }))
+      };
+
+      map.addSource('landmarks', { type: 'geojson', data: landmarksGeoJSON });
+      map.addLayer({
+        id: 'landmarks-layer',
+        type: 'symbol',
+        source: 'landmarks',
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Bold'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 10, 8, 14, 12],
+          'text-offset': [0, 1.2],
+          'text-anchor': 'top',
+          'visibility': 'none'
+        },
+        paint: {
+          'text-color': '#ff6b9d',
+          'text-halo-color': 'rgba(0,0,0,0.85)',
+          'text-halo-width': 2,
+        }
+      });
+
+      // Landmark Icons (Simple circle for now)
+      map.addLayer({
+        id: 'landmarks-circles',
+        type: 'circle',
+        source: 'landmarks',
+        layout: { 'visibility': 'none' },
+        paint: {
+          'circle-radius': 4,
+          'circle-color': '#ff6b9d',
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
       });
       map.addLayer({
         id: 'selection-rect-layer',
@@ -805,23 +851,30 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showMetro ? 'visible' : 'none');
     });
 
-    // Green Cover
-    if (map.getLayer('satellite-layer')) {
-      map.setLayoutProperty('satellite-layer', 'visibility', showGreen ? 'visible' : 'none');
-    } else if (showGreen) {
-      map.addSource('google-satellite', {
-        type: 'raster',
-        tiles: ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&scale=2'],
-        tileSize: 256
+      // Green Cover
+      if (map.getLayer('satellite-layer')) {
+        map.setLayoutProperty('satellite-layer', 'visibility', showGreen ? 'visible' : 'none');
+      } else if (showGreen) {
+        map.addSource('google-satellite', {
+          type: 'raster',
+          tiles: ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&scale=2'],
+          tileSize: 256
+        });
+        map.addLayer({
+          id: 'satellite-layer',
+          type: 'raster',
+          source: 'google-satellite',
+          layout: { 'visibility': 'visible' }
+        }, 'clusters');
+      }
+
+      // Landmarks
+      const landmarkLayers = ['landmarks-layer', 'landmarks-circles'];
+      landmarkLayers.forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showLandmarks ? 'visible' : 'none');
       });
-      map.addLayer({
-        id: 'satellite-layer',
-        type: 'raster',
-        source: 'google-satellite',
-        layout: { 'visibility': 'visible' }
-      }, 'clusters');
     }
-  }, [showMetro, showGreen, mapReady]);
+  }, [showMetro, showGreen, showLandmarks, mapReady]);
 
   return (
     <div className="relative w-full h-screen bg-bg overflow-hidden" data-theme={mapStyle}>
@@ -867,6 +920,8 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
             onHelp={() => setShowTour(true)} 
             onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
             showHeatmap={showHeatmap}
+            onToggleLandmarks={() => setShowLandmarks(!showLandmarks)}
+            showLandmarks={showLandmarks}
           />
 
           <Footer />

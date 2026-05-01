@@ -26,6 +26,8 @@ export default function RightControls({
   onHelp: () => void;
   onToggleHeatmap: () => void;
   showHeatmap: boolean;
+  onToggleLandmarks: () => void;
+  showLandmarks: boolean;
 }) {
   return (
     <div id="right-controls" className="fixed right-3 md:right-4 md:top-[84px] top-[90px] flex flex-col gap-1.5 md:gap-[10px] z-[1000] pointer-events-auto items-end">
@@ -51,6 +53,11 @@ export default function RightControls({
       {/* Heatmap */}
       <button onClick={onToggleHeatmap} title="Rent Heatmap" className={`w-8 h-8 md:w-[42px] md:h-[42px] rounded-[8px] md:rounded-[10px] flex items-center justify-center shadow-2xl transition-colors ${showHeatmap ? 'bg-orange-500 text-white border-none' : 'glass glass-hover text-text2 hover:text-text1'}`}>
         <svg className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+      </button>
+
+      {/* Landmarks */}
+      <button onClick={onToggleLandmarks} title="Key Landmarks" className={`w-8 h-8 md:w-[42px] md:h-[42px] rounded-[8px] md:rounded-[10px] flex items-center justify-center shadow-2xl transition-colors ${showLandmarks ? 'bg-pink text-white border-none' : 'glass glass-hover text-text2 hover:text-text1'}`}>
+        <svg className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       </button>
 
       {/* Stats */}
