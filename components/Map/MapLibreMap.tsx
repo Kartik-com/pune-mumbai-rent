@@ -873,7 +873,6 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       landmarkLayers.forEach(id => {
         if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showLandmarks ? 'visible' : 'none');
       });
-    }
   }, [showMetro, showGreen, showLandmarks, mapReady]);
 
   return (
