@@ -156,7 +156,7 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
       if (filters.showShortlisted && !favorites.includes(p.id)) return false;
       return true;
     });
-  }, [pins, categoryMode, filters]);
+  }, [pins, categoryMode, filters, favorites]);
 
   // ── Transform Pins to GeoJSON ──
   const pinsGeoJSON = useMemo(() => ({
@@ -599,17 +599,28 @@ export default function MapLibreMap({ city, centerLat, centerLng, zoom }: MapPro
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
             <div style="background:${pin.category === 'commercial' ? 'var(--purple)' : (pin.gated ? 'var(--pin-gated)' : 'var(--pin-nogated)')};color:#0f0f0f;font-family:var(--font-outfit),sans-serif;font-weight:800;font-size:9px;padding:4px 8px;border-radius:6px;letter-spacing:1px;text-transform:uppercase;">${pin.category === 'commercial' ? 'Commercial' : (pin.gated ? 'Gated' : 'Independent')}</div>
-            <button onclick="window.__toggleFav__('${pin.id}')" style="background:var(--surface2);border:1px solid var(--border1);border-radius:8px;width:32px;height:32px;display:flex;items-center:center;justify-content:center;cursor:pointer;transition:all 0.2s;">
+            <button onclick="window.__toggleFav__('${pin.id}')" style="background:var(--surface2);border:1px solid var(--border1);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;">
               <span style="color:${isFav ? '#ff4b4b' : 'var(--text3)'};font-size:16px;">${isFav ? '❤️' : '🤍'}</span>
             </button>
           </div>
         </div>
+
         <p style="font-size:14px;color:var(--text2);font-weight:500;margin:0 0 6px;">${pin.society}</p>
+        ${pin.note ? `<p style="font-size:12px;color:var(--text3);font-style:italic;margin:0 0 10px;">"${pin.note}"</p>` : ''}
         ${ratingHtml}
-        <button onclick="window.__interestPin__('${pin.id}')" style="width:100%;background:var(--accent);color:#0f0f0f;border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:700;margin-top:10px;">Contact Owner</button>
+
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <button onclick="window.__ratePin__('${pin.id}')" style="flex:1;background:var(--surface3);color:var(--accent);border:1px solid var(--border);padding:7px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;">⭐ Rate</button>
+          <button onclick="window.__interestPin__('${pin.id}')" style="flex:2;background:var(--accent);color:#0f0f0f;border:none;padding:7px;border-radius:8px;cursor:pointer;font-weight:700;font-size:11px;">Interested</button>
+          <button onclick="window.__reportPin__('${pin.id}')" style="background:var(--surface3);color:var(--text3);border:1px solid var(--border);padding:7px 10px;border-radius:8px;cursor:pointer;font-size:11px;">🚩</button>
+        </div>
+
+        ${isOwner ? `<button onclick="window.__deletePin__('${pin.id}')" style="width:100%;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);padding:7px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;margin-top:8px;">🗑 Delete your pin</button>` : ''}
+
+        <div style="font-size:10px;color:var(--text3);text-align:right;margin-top:8px;">${new Date(pin.created_at).toLocaleDateString('en-IN')}</div>
       </div>
     `;
-  }, [userIpHash]);
+  }, [userIpHash, favorites]);
 
   // ── Update Pins & Markers ──
   useEffect(() => {
